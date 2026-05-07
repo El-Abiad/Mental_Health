@@ -2,7 +2,6 @@
 
 class User
 {
-    private mysqli $db;
     public static function findByEmail(string $email): array|null
     {
         $db = Database::getConnection();
@@ -56,11 +55,18 @@ class User
         ');
         $roleStmt->bind_param('ii', $userId, $roleId);
         $roleStmt->execute();
-
-        $profileStmt = $db->prepare('
-            INSERT INTO PatientProfile (UserId) VALUES (?)
-        ');
-        $profileStmt->bind_param('i', $userId);
+        if ($roleId == 3) {
+            $profileStmt = $db->prepare('
+                INSERT INTO PatientProfile (UserId) VALUES (?)
+                
+            ');
+            $profileStmt->bind_param('i', $userId);
+        }
+        if ($roleId == 1) {
+            $adminlevel = 1;
+            $profileStmt = $db->prepare('INSERT INTO adminprofile values(?,?)');
+            $profileStmt->bind_param("ii", $userId, $adminlevel);
+        }
         $profileStmt->execute();
 
         return $userId;

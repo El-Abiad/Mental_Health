@@ -25,13 +25,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete') {
     $userId = intval($_POST['id']);
     if (AdminController::DeleteUser($userId)) {
-        $_SESSION['msg']      = 'User deleted successfully!';
-        $_SESSION['msg_type'] = 'success';
+        echo "User Deleting Successfully";
     } else {
-        $_SESSION['msg']      = 'Error deleting user.';
-        $_SESSION['msg_type'] = 'error';
+        echo  'Error deleting user.';
     }
-    header('Location: users.php');
     exit();
 }
 ?>
@@ -66,6 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 <th>Phone</th>
                 <th>Role</th>
                 <th>Actions</th>
+                <th>IsActive</th>
             </tr>
             <?php
             $users = AdminController::GetAllUsers();
@@ -89,6 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                                 <button type="submit" class="btn-delete">Delete</button>
                             </form>
                         </td>
+                        <td class="IsActive"><?php echo $user["IsActive"]==1?"Yes":"No"?></td>
                     </tr>
                 <?php endforeach; ?>
             <?php else: ?>

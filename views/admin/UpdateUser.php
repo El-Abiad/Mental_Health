@@ -10,7 +10,7 @@
 
 <body>
     <?php
-    require_once "../../models/Admin.php";
+    require_once "../../controllers/AdminController.php";
     $roles = AdminController::GetAllRoles();
     if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['id'])) {
         $id = intval($_GET['id']);

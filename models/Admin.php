@@ -1,9 +1,8 @@
 <?php
 require_once "User.php";
-require_once "../Mental_Health/config/db.php";
+require_once "../../config/db.php";
 class Admin extends User
 {
-    private mysqli $db;
     public static function GetAllRoles(): array
     {
         $db = Database::getConnection();
@@ -14,6 +13,9 @@ class Admin extends User
     {
         $db = Database::getConnection();
         $stmt = $db->prepare('DELETE FROM Users WHERE Id = ?');
+        if ($stmt === false) {
+            die("Prepare failed: " . $db->error);
+        }
         $stmt->bind_param('i', $userId);
         return $stmt->execute();
     }
@@ -55,12 +57,16 @@ class Admin extends User
         $res->bind_param("ssisi", $reason, $status, $resolvedby, $reportid);
         return $res->execute();
     }
-    public static function GiveWarning(int $userId, string $reason)
+    public static function GiveWarning(int $userId, string $mess)
     {
         $db = Database::getConnection();
-        $message = "Official Admin Warning: " . $reason;
-        $query = "INSERT INTO notification (UserId, Message, CreatedAt) VALUES (?, ?, NOW())";
+        $message = "Official Admin Warning: " . $mess;
+        $query = "INSERT INTO notification (UserId, Message) VALUES (?, ?)";
         $stmt = $db->prepare($query);
+        if ($stmt === false) {
+            die("Prepare failed: " . $$db->error);
+        }
+
         $stmt->bind_param("is", $userId, $message);
         return $stmt->execute();
     }

@@ -1,6 +1,6 @@
 <?php
 require_once "../../models/User.php";
-class UserController extends BaseController
+class UserController
 {
     public static function GetAllUsers(): array
     {

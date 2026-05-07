@@ -22,7 +22,7 @@ class AuthController extends BaseController {
             return;
         }
 
-        $user = User::findByEmail($this->db, $email);
+        $user = User::findByEmail($email);
 
         if (!$user || !Encryption::verifyPassword($password, $user['Password'])) {
             $this->view('auth/login', ['error' => 'Invalid email or password.']);
@@ -35,7 +35,7 @@ class AuthController extends BaseController {
         }
 
         $_SESSION['user_id'] = $user['Id'];
-        $_SESSION['role']    = User::getRole($this->db, $user['Id']);
+        $_SESSION['role']    = User::getRole($user['Id']);
         $_SESSION['name']    = $user['FullName'];
 
         $this->redirectByRole($_SESSION['role']);
@@ -60,13 +60,13 @@ class AuthController extends BaseController {
             return;
         }
 
-        if (User::findByEmail($this->db, $email)) {
+        if (User::findByEmail( $email)) {
             $this->view('auth/register', ['error' => 'Email already exists.']);
             return;
         }
 
         $hashed = Encryption::hashPassword($password);
-        User::create($this->db, $username, $email, $hashed, $fullname, $phone);
+        User::create($username, $email, $hashed, $fullname, $phone);
 
         $this->view('auth/login', ['success' => 'Account created. Please log in.']);
     }

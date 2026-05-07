@@ -31,4 +31,8 @@ class AdminController extends UserController
     {
         return Admin::GiveWarning($userid, $reason);
     }
+    public static function GiveBan(int $userId)
+    {
+        return Admin::GiveBan($userId);
+    }
 }
