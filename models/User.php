@@ -33,7 +33,7 @@ class User {
         return $row ? $row['RoleName'] : false;
     }
 
-    public static function create(mysqli $db, string $username, string $email, string $password, string $fullname, string $phone = ''): int {
+    public static function create(mysqli $db, string $username, string $email, string $password, string $fullname,string $roleId, string $phone = ''): int {
         $stmt = $db->prepare('
             INSERT INTO Users (Username, Email, Password, FullName, Phone) 
             VALUES (?, ?, ?, ?, ?)
@@ -43,10 +43,9 @@ class User {
         $userId = $stmt->insert_id;
 
         $roleStmt = $db->prepare('
-            INSERT INTO UserRoles (UserId, RoleId)
-            SELECT ?, RoleId FROM Roles WHERE RoleName = "patient"
+            INSERT INTO UserRoles (UserId, RoleId) VALUES (?, ?)
         ');
-        $roleStmt->bind_param('i', $userId);
+        $roleStmt->bind_param('ii', $userId,$roleId);
         $roleStmt->execute();
 
         $profileStmt = $db->prepare('
@@ -64,7 +63,7 @@ class User {
             FROM Users u
             LEFT JOIN UserRoles ur ON u.Id = ur.UserId
             LEFT JOIN Roles r ON ur.RoleId = r.RoleId
-            ORDER BY u.CreatedAt DESC
+            ORDER BY u.CreatedAt ASC
         ');
         return $result->fetch_all(MYSQLI_ASSOC);
     }

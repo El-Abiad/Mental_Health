@@ -26,7 +26,7 @@ class Database {
         return self::$instance;
     }
 
-    public function getConnection(): mysqli {
-        return $this->connection;
+    public static function getConnection(): mysqli {
+        return self::getInstance()->connection;
     }
 }

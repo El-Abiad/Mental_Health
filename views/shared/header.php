@@ -6,7 +6,7 @@
     <title><?= htmlspecialchars($title ?? 'Mental Health Platform') ?></title>
     <link rel="stylesheet" href="/clinic/assets/style.css">
 </head>
-<body>
+<body class="header">
     <nav>
         <div class="nav-brand">MindCare</div>
         <div class="nav-links">

@@ -5,7 +5,7 @@
     font-family: Arial, sans-serif;
 }
 
-body {
+.admin-dashboard,.header {
     background: #f0f0f0;
     display: flex;
     justify-content: center;
@@ -27,16 +27,31 @@ h2 {
     text-align: center;
     color: #333;
 }
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #555;
+    font-size: 14px;
+    padding-left: 5px;
+}
 
 input {
     width: 100%;
     padding: 0.75rem;
     margin-bottom: 1rem;
-    border: 1px solid #f6efef;
+    border: 1px solid #cdc7c7;
     border-radius: 4px;
     font-size: 14px;
 }
-
+select {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border: 1px solid #cdc7c7;
+    border-radius: 4px;
+    font-size: 14px;
+    background: white;
+}
 button {
     width: 100%;
     padding: 0.75rem;
@@ -59,7 +74,7 @@ p {
     color: #423f3f;
 }
 
-a {
+.nav-links a {
     color: #00b2e4;
     text-decoration: none;
 }
@@ -112,11 +127,72 @@ nav {
     font-size: 14px;
     text-decoration: none;
 }
-
+.nav-bar {
+    background: #00b2e4;
+    padding: 0rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.nav-bar h1 {
+    color: white;
+    font-size: 1.4rem;
+    font-weight: bold;
+}
+.nav-bar nav {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: white;
+}
+.nav-bar nav a {
+    color: white;
+    font-size: 14px;
+    text-decoration: none;
+}
+.nav-bar nav ul  {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    list-style: none;
+}
 main {
     padding: 2rem;
 }
-
+.users-table table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    margin-bottom: 2rem;
+}
+.btn-delete {
+    width: auto;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.btn-delete:hover {
+    background: #c0392b;
+}
+.btn-edit {
+    width: auto;
+    background: green;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+}
+.btn-edit:hover {
+    background: #10ba2cb9;
+}
+.msg-success { background:#d4edda; color:#155724; padding:12px 20px; border-radius:6px; margin:10px; }
+.msg-error   { background:#f8d7da; color:#721c24; padding:12px 20px; border-radius:6px; margin:10px; }
+.edit-form   { background:#f0f4ff; border:1px solid #ccc; padding:20px; margin:20px 0; border-radius:8px; }
 footer {
     text-align: center;
     padding: 1rem;
