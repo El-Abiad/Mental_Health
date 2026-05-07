@@ -1,0 +1,78 @@
+<?php
+
+class User {
+
+    public static function findByEmail(mysqli $db, string $email): array|null {
+        $stmt = $db->prepare('SELECT * FROM Users WHERE Email = ?');
+        $stmt->bind_param('s', $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_assoc();
+    }
+
+    public static function findById(mysqli $db, int $id): array|null {
+        $stmt = $db->prepare('SELECT * FROM Users WHERE Id = ?');
+        $stmt->bind_param('i', $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_assoc();
+    }
+
+    public static function getRole(mysqli $db, int $userId): string|false {
+        $stmt = $db->prepare('
+            SELECT r.RoleName 
+            FROM Roles r
+            JOIN UserRoles ur ON r.RoleId = ur.RoleId
+            WHERE ur.UserId = ?
+            LIMIT 1
+        ');
+        $stmt->bind_param('i', $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        return $row ? $row['RoleName'] : false;
+    }
+
+    public static function create(mysqli $db, string $username, string $email, string $password, string $fullname, string $phone = ''): int {
+        $stmt = $db->prepare('
+            INSERT INTO Users (Username, Email, Password, FullName, Phone) 
+            VALUES (?, ?, ?, ?, ?)
+        ');
+        $stmt->bind_param('sssss', $username, $email, $password, $fullname, $phone);
+        $stmt->execute();
+        $userId = $stmt->insert_id;
+
+        $roleStmt = $db->prepare('
+            INSERT INTO UserRoles (UserId, RoleId)
+            SELECT ?, RoleId FROM Roles WHERE RoleName = "patient"
+        ');
+        $roleStmt->bind_param('i', $userId);
+        $roleStmt->execute();
+
+        $profileStmt = $db->prepare('
+            INSERT INTO PatientProfile (UserId) VALUES (?)
+        ');
+        $profileStmt->bind_param('i', $userId);
+        $profileStmt->execute();
+
+        return $userId;
+    }
+
+    public static function getAll(mysqli $db): array {
+        $result = $db->query('
+            SELECT u.*, r.RoleName 
+            FROM Users u
+            LEFT JOIN UserRoles ur ON u.Id = ur.UserId
+            LEFT JOIN Roles r ON ur.RoleId = r.RoleId
+            ORDER BY u.CreatedAt DESC
+        ');
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
+
+    public static function setActive(mysqli $db, int $userId, bool $status): void {
+        $stmt = $db->prepare('UPDATE Users SET IsActive = ? WHERE Id = ?');
+        $active = $status ? 1 : 0;
+        $stmt->bind_param('ii', $active, $userId);
+        $stmt->execute();
+    }
+}
