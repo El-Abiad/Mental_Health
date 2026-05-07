@@ -1,30 +1,29 @@
 <?php
 require_once "../../models/User.php";
-require_once "../../config/db.php";
 class UserController extends BaseController
 {
-    public static function GetAllUsers(mysqli $db): array
+    public static function GetAllUsers(): array
     {
-        return User::getAll($db);
+        return User::getAll();
     }
-    public static function GetUserById(mysqli $db, int $userId): ?array
+    public static function GetUserById(int $userId): ?array
     {
-        return User::findById($db, $userId);
+        return User::findById($userId);
     }
-    public static function GetUserByEmail(mysqli $db, string $email): ?array
+    public static function GetUserByEmail(string $email): ?array
     {
-        return User::findByEmail($db, $email);
+        return User::findByEmail($email);
     }
-    public static function GetUserRole(mysqli $db, int $userId): string|false
+    public static function GetUserRole(int $userId): string|false
     {
-        return User::getRole($db, $userId);
+        return User::getRole($userId);
     }
-    public static function CreateUser(mysqli $db, string $username, string $email, string $password, string $fullname, string $roleId, string $phone = ''): int
+    public static function CreateUser(string $username, string $email, string $password, string $fullname, string $roleId, string $phone = ''): int
     {
-        return User::create($db, $username, $email, $password, $fullname, $roleId, $phone);
+        return User::create($username, $email, $password, $fullname, $roleId, $phone);
     }
-    public static function SetActive(mysqli $db, int $userId, bool $isActive): void
+    public static function SetActive(int $userId, bool $isActive): void
     {
-        User::SetActive($db, $userId, $isActive);
+        User::SetActive($userId, $isActive);
     }
 }

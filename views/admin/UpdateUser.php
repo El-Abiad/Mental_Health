@@ -11,12 +11,10 @@
 <body>
     <?php
     require_once "../../models/Admin.php";
-    require_once "../../config/db.php";
-    $roles = AdminController::GetAllRoles(Database::getConnection());
+    $roles = AdminController::GetAllRoles();
     if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['id'])) {
-        $db = Database::getConnection();
         $id = intval($_GET['id']);
-        $user = AdminController::GetUserById($db, $id);
+        $user = AdminController::GetUserById($id);
         if (!$user) {
             echo "User not found.";
             exit();
@@ -29,7 +27,7 @@
         $fullname = strval($_POST['FullName']);
         $phone    = strval($_POST['phone'] ?? '');
         $roleId   = intval($_POST['role']);
-        if (AdminController::UpdateUser($db, $id, $username, $email, $fullname, $phone, $roleId)) {
+        if (AdminController::UpdateUser($id, $username, $email, $fullname, $phone, $roleId)) {
             echo "User updated successfully!";
         } else {
             echo "Error updating user.";
@@ -57,7 +55,7 @@
             <label for="edit-role">Role:</label>
             <select id="edit-role" name="role">
                 <?php
-                $currentUserRoleName = AdminController::GetUserRole(Database::getConnection(), $user['Id']);
+                $currentUserRoleName = AdminController::GetUserRole($user['Id']);
                 foreach ($roles as $role) {
                     $selected = ($currentUserRoleName == $role['RoleName']) ? 'selected' : '';
                     echo "<option value='{$role['RoleId']}' " . $selected . "  >{$role['RoleName']}</option>";

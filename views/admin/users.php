@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $fullname = $_POST['fullname'];
     $roleId = $_POST['role'];
     $phone = $_POST['phone'];
-    if (AdminController::CreateUser($db, $username, $email, $password, $fullname, $roleId, $phone) > 0) {
+    if (AdminController::CreateUser($username, $email, $password, $fullname, $roleId, $phone) > 0) {
         $_SESSION['msg']      = 'User added successfully!';
         $_SESSION['msg_type'] = 'success';
     } else {
@@ -23,9 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     exit();
 }
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete') {
-    $db = Database::getConnection();
     $userId = intval($_POST['id']);
-    if (AdminController::DeleteUser($db, $userId)) {
+    if (AdminController::DeleteUser($userId)) {
         $_SESSION['msg']      = 'User deleted successfully!';
         $_SESSION['msg_type'] = 'success';
     } else {
@@ -69,9 +68,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 <th>Actions</th>
             </tr>
             <?php
-            $users = AdminController::GetAllUsers(Database::getConnection());
+            $users = AdminController::GetAllUsers();
             $admin = new AdminController();
-            $roles = AdminController::GetAllRoles(Database::getConnection());
+            $roles = AdminController::GetAllRoles();
             if (!empty($users) && is_array($users)):
             ?>
                 <?php foreach ($users as $user): ?>
@@ -79,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                         <td class="user-id"><?php echo $user['Id']; ?></td>
                         <td class="Username"><?php echo $user['Username']; ?></td>
                         <td class="Email"><?php echo $user['Email']; ?></td>
-                        <td class="Role"><?php echo $admin->GetUserRole(Database::getConnection(), $user['Id']); ?></td>
+                        <td class="Role"><?php echo $admin->GetUserRole($user['Id']); ?></td>
                         <td class="Phone"><?php echo $user['Phone']; ?></td>
                         <td>
                             <a href="UpdateUser.php?id=<?php echo htmlspecialchars($user['Id']); ?>" class="btn-edit">Update User</a>
@@ -117,7 +116,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             <label for="role">Role:</label>
             <select id="role" name="role">
                 <?php
-                $roles = $admin->GetAllRoles(Database::getConnection());
+                $roles = $admin->GetAllRoles();
                 foreach ($roles as $role) {
                     echo "<option value='{$role['RoleId']}'>{$role['RoleName']}</option>";
                 }

@@ -1,20 +1,34 @@
 <?php
 require_once "../../models/Admin.php";
 require_once "../../controllers/UserController.php";
-require_once "../../config/db.php";
 class AdminController extends UserController
 {
-    public static function GetAllRoles(mysqli $db): array
+    public static function GetAllRoles(): array
     {
-        return Admin::GetAllRoles($db);
+        return Admin::GetAllRoles();
     }
-    public static function DeleteUser(mysqli $db, int $userId): bool
+    public static function DeleteUser(int $userId): bool
     {
-        return Admin::DeleteUser($db, $userId);
+        return Admin::DeleteUser($userId);
     }
-    public static function UpdateUser(mysqli $db, int $userId, string $username, string $email, string $fullname, string $phone, int $roleId): bool
+    public static function UpdateUser(int $userId, string $username, string $email, string $fullname, string $phone, int $roleId): bool
     {
-        return Admin::UpdateUser($db, $userId, $username, $email, $fullname, $phone, $roleId);
+        return Admin::UpdateUser($userId, $username, $email, $fullname, $phone, $roleId);
+    }
+    public static function GetAllViolationReports()
+    {
+        return Admin::GetAllViolationReports();
+    }
+    public static function ChangeViolationReportStatus(int $reportid, string $status)
+    {
+        return Admin::ChangeViolationReportStatus($reportid, $status);
+    }
+    public static function UpdateViolationReport(int $reportid, string $reason, string $status, int $ResolvedBy)
+    {
+        return Admin::UpdateViolationReport($reportid, $reason, $status, $ResolvedBy);
+    }
+    public static function GiveWarning(int $userid, string $reason)
+    {
+        return Admin::GiveWarning($userid, $reason);
     }
 }
-?>

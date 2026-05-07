@@ -1,8 +1,11 @@
 <?php
 
-class User {
-
-    public static function findByEmail(mysqli $db, string $email): array|null {
+class User
+{
+    private mysqli $db;
+    public static function findByEmail(string $email): array|null
+    {
+        $db = Database::getConnection();
         $stmt = $db->prepare('SELECT * FROM Users WHERE Email = ?');
         $stmt->bind_param('s', $email);
         $stmt->execute();
@@ -10,7 +13,9 @@ class User {
         return $result->fetch_assoc();
     }
 
-    public static function findById(mysqli $db, int $id): array|null {
+    public static function findById(int $id): array|null
+    {
+        $db = Database::getConnection();
         $stmt = $db->prepare('SELECT * FROM Users WHERE Id = ?');
         $stmt->bind_param('i', $id);
         $stmt->execute();
@@ -18,7 +23,9 @@ class User {
         return $result->fetch_assoc();
     }
 
-    public static function getRole(mysqli $db, int $userId): string|false {
+    public static function getRole(int $userId): string|false
+    {
+        $db = Database::getConnection();
         $stmt = $db->prepare('
             SELECT r.RoleName 
             FROM Roles r
@@ -33,7 +40,9 @@ class User {
         return $row ? $row['RoleName'] : false;
     }
 
-    public static function create(mysqli $db, string $username, string $email, string $password, string $fullname,string $roleId, string $phone = ''): int {
+    public static function create(string $username, string $email, string $password, string $fullname, string $roleId, string $phone = ''): int
+    {
+        $db = Database::getConnection();
         $stmt = $db->prepare('
             INSERT INTO Users (Username, Email, Password, FullName, Phone) 
             VALUES (?, ?, ?, ?, ?)
@@ -45,7 +54,7 @@ class User {
         $roleStmt = $db->prepare('
             INSERT INTO UserRoles (UserId, RoleId) VALUES (?, ?)
         ');
-        $roleStmt->bind_param('ii', $userId,$roleId);
+        $roleStmt->bind_param('ii', $userId, $roleId);
         $roleStmt->execute();
 
         $profileStmt = $db->prepare('
@@ -57,7 +66,9 @@ class User {
         return $userId;
     }
 
-    public static function getAll(mysqli $db): array {
+    public static function getAll(): array
+    {
+        $db = Database::getConnection();
         $result = $db->query('
             SELECT u.*, r.RoleName 
             FROM Users u
@@ -68,7 +79,9 @@ class User {
         return $result->fetch_all(MYSQLI_ASSOC);
     }
 
-    public static function setActive(mysqli $db, int $userId, bool $status): void {
+    public static function setActive(int $userId, bool $status): void
+    {
+        $db = Database::getConnection();
         $stmt = $db->prepare('UPDATE Users SET IsActive = ? WHERE Id = ?');
         $active = $status ? 1 : 0;
         $stmt->bind_param('ii', $active, $userId);
