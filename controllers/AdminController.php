@@ -35,4 +35,16 @@ class AdminController extends UserController
     {
         return Admin::GiveBan($userId);
     }
+    public static function GetAllIntakeForms()
+    {
+        return Admin::GetAllIntakeForms();
+    }
+    public static function VerifyForm(int $formid, bool $IsVerified)
+    {
+        return Admin::VerifyForm($formid, $IsVerified);
+    }
+    public static function GetPatientName(int $patientid): string
+    {
+        return Admin::GetPatientName($patientid);
+    }
 }

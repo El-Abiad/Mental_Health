@@ -34,11 +34,12 @@ if($_SERVER["REQUEST_METHOD"]==='GET' && isset($_GET["Action"])  && $_GET["Actio
 </head>
 <body>
     <div class="nav-bar">
-        <h1>Manage Users</h1>
+        <h1>Manage Violations</h1>
         <nav>
             <ul>
                 <li><a href="../admin/dashboard.php">Dashboard</a></li>
                 <li><a href="../admin/users.php">Users</a></li>
+                <li><a href="../admin/VerifyIntakeForms.php">Verify Intake Forms</a></li>
                 <li><a href="../auth/login.php">Logout</a></li>
             </ul>
         </nav>

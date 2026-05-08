@@ -48,6 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         <nav>
             <ul>
                 <li><a href="dashboard.php">Dashboard</a></li>
+                <li><a href="VerifyIntakeForms.php">Verify Intake Forms</a></li>
                 <li><a href="violations.php">Violations</a></li>
                 <li><a href="../auth/login.php">Logout</a></li>
 
@@ -87,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                                 <button type="submit" class="btn-delete">Delete</button>
                             </form>
                         </td>
-                        <td class="IsActive"><?php echo $user["IsActive"]==1?"Yes":"No"?></td>
+                        <td class="IsActive"><?php echo $user["IsActive"] == 1 ? "Yes" : "No" ?></td>
                     </tr>
                 <?php endforeach; ?>
             <?php else: ?>

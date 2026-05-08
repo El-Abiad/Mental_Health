@@ -13,6 +13,7 @@
             <ul>
                 <li><a href="users.php">Manage Users</a></li>
                 <li><a href="violations.php">Violations</a></li>
+                <li><a href="VerifyIntakeForms.php">Verify Intake Forms</a></li>
                 <li><a href="../auth/login.php">Logout</a></li>
 
             </ul>

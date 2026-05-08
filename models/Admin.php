@@ -78,4 +78,28 @@ class Admin extends User
         $stmt->bind_param("i", $userId);
         return $stmt->execute();
     }
+    public static function GetAllIntakeForms(): array
+    {
+        $db = Database::getConnection();
+        $res = $db->query("SELECT * FROM INTAKEFORM");
+        return $res->fetch_all(MYSQLI_ASSOC);
+    }
+    public static function VerifyForm(int $formid, bool $IsAccepted): bool
+    {
+        $db = Database::getConnection();
+        $res = $db->prepare("UPDATE INTAKEFORM SET isVerified=? WHERE FORMID=?");
+        $boolans = $IsAccepted ? 1 : 0;
+        $res->bind_param("ii", $boolans, $formid);
+        return $res->execute();
+    }
+    public static function GetPatientName(int $patientID): string
+    {
+        $db = Database::getConnection();
+        $res = $db->prepare("SELECT username from users u where id=?");
+        $res->bind_param("i", $patientID);
+        $res->execute();
+        $result = $res->get_result();
+        $row = $result->fetch_assoc();
+        return $row ? $row['username'] : 'Unknown';
+    }
 }
