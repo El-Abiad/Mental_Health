@@ -1,6 +1,15 @@
 
 <?php include __DIR__ . '/../shared/header.php'; ?>
-<div class="container-fluid px-4 py-4">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manager Dashboard</title>
+  <link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body>
+  <div class="container-fluid px-4 py-4">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="fw-bold mb-0">Manager Dashboard</h2>
     <span class="text-muted">Welcome, <?= htmlspecialchars($_SESSION['full_name'] ?? 'Manager') ?></span>
@@ -94,3 +103,6 @@
   <?php endif; ?>
 </div>
 <?php include __DIR__ . '/../shared/footer.php'; ?>
+
+</body>
+</html>
