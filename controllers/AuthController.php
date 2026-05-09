@@ -4,16 +4,19 @@ require_once __DIR__ . '/../core/BaseController.php';
 require_once __DIR__ . '/../models/User.php';
 require_once __DIR__ . '/../config/encryption.php';
 
-class AuthController extends BaseController {
+class AuthController extends BaseController
+{
 
-    public function login(): void {
+    public function login(): void
+    {
         if ($this->isLoggedIn()) {
             $this->redirectByRole($_SESSION['role']);
         }
         $this->view('auth/login');
     }
 
-    public function loginPost(): void {
+    public function loginPost(): void
+    {
         $email    = trim($_POST['email']    ?? '');
         $password = trim($_POST['password'] ?? '');
 
@@ -41,14 +44,16 @@ class AuthController extends BaseController {
         $this->redirectByRole($_SESSION['role']);
     }
 
-    public function register(): void {
+    public function register(): void
+    {
         if ($this->isLoggedIn()) {
             $this->redirectByRole($_SESSION['role']);
         }
         $this->view('auth/register');
     }
 
-    public function registerPost(): void {
+    public function registerPost(): void
+    {
         $username = trim($_POST['username'] ?? '');
         $email    = trim($_POST['email']    ?? '');
         $password = trim($_POST['password'] ?? '');
@@ -71,19 +76,31 @@ class AuthController extends BaseController {
         $this->view('auth/login', ['success' => 'Account created. Please log in.']);
     }
 
-    public function logout(): void {
+    public function logout(): void
+    {
         session_destroy();
-        $this->redirect('/clinic/controllers/auth_run.php?action=login');
+        $this->redirect('/Mental_Health/controllers/auth_run.php?action=login');
     }
 
-   
-    private function redirectByRole(string $role): void {
+
+    private function redirectByRole(string $role): void
+    {
         switch (strtolower($role)) {
-            case 'admin':     $this->redirect('/clinic/controllers/admin_run.php?action=dashboard');     break;
-            case 'manager':   $this->redirect('/clinic/controllers/manager_run.php?action=dashboard');   break;
-            case 'therapist': $this->redirect('/clinic/controllers/therapist_run.php?action=dashboard'); break;
-            case 'patient':   $this->redirect('/clinic/controllers/patient_run.php?action=dashboard');   break;
-            default:          $this->redirect('/clinic/controllers/auth_run.php?action=login');           break;
+            case 'admin':
+                $this->redirect('/Mental_Health/controllers/admin_run.php?action=dashboard');
+                break;
+            case 'manager':
+                $this->redirect('/Mental_Health/controllers/manager_run.php?action=dashboard');
+                break;
+            case 'therapist':
+                $this->redirect('/Mental_Health/controllers/therapist_run.php?action=dashboard');
+                break;
+            case 'patient':
+                $this->redirect('/Mental_Health/controllers/patient_run.php?action=dashboard');
+                break;
+            default:
+                $this->redirect('/Mental_Health/controllers/auth_run.php?action=login');
+                break;
         }
     }
 }

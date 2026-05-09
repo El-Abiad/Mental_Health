@@ -12,8 +12,8 @@ if (
     empty($_SESSION['user_id']) ||
     ($_SESSION['role'] ?? '') !== 'manager'
 ) {
-    header('Location: ../auth/login.php');
-    exit;
+        header('Location: /Mental_Health/controllers/auth_run.php?action=login');  
+        exit;
 }
 
 $controller = new ManagerController();

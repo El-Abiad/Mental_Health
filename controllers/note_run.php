@@ -7,9 +7,9 @@ if (session_status() === PHP_SESSION_NONE) {
 $role = strtolower((string)($_SESSION['role'] ?? ''));
 
 if ($role === 'therapist') {
-    header('Location: /clinic/controllers/therapist_run.php?action=notes');
+    header('Location: /Mental_Health/controllers/therapist_run.php?action=notes');
     exit;
 }
 
-header('Location: /clinic/controllers/auth_run.php?action=login');
+header('Location: /Mental_Health/controllers/auth_run.php?action=login');
 exit;
