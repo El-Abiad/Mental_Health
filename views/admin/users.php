@@ -15,14 +15,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($username && $email && $fullname) {
             AdminController::CreateUser($username, $email, $password, $fullname, $roleId, $phone);
-            header('Location: /clinic/controllers/admin_run.php?action=users&msg=added');
+            header('Location: /Mental_Health/controllers/admin_run.php?action=users&msg=added');
             exit;
         }
     }
 
     if ($action === 'delete') {
         AdminController::DeleteUser((int)($_POST['id'] ?? 0));
-        header('Location: /clinic/controllers/admin_run.php?action=users&msg=deleted');
+        header('Location: /Mental_Health/controllers/admin_run.php?action=users&msg=deleted');
         exit;
     }
 }
@@ -35,7 +35,7 @@ $roles = AdminController::GetAllRoles();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/clinic/assets/style.css">
+    <link rel="stylesheet" href="/Mental_Health/assets/style.css">
     <title>Manage Users</title>
 </head>
 <body>
@@ -43,10 +43,10 @@ $roles = AdminController::GetAllRoles();
         <h1>Manage Users</h1>
         <nav>
             <ul>
-                <li><a href="/clinic/controllers/admin_run.php?action=dashboard">Dashboard</a></li>
-                <li><a href="/clinic/controllers/admin_run.php?action=verifyIntakeForms">Verify Intake Forms</a></li>
-                <li><a href="/clinic/controllers/admin_run.php?action=violations">Violations</a></li>
-                <li><a href="/clinic/controllers/auth_run.php?action=logout">Logout</a></li>
+                <li><a href="/Mental_Health/controllers/admin_run.php?action=dashboard">Dashboard</a></li>
+                <li><a href="/Mental_Health/controllers/admin_run.php?action=verifyIntakeForms">Verify Intake Forms</a></li>
+                <li><a href="/Mental_Health/controllers/admin_run.php?action=violations">Violations</a></li>
+                <li><a href="/Mental_Health/controllers/auth_run.php?action=logout">Logout</a></li>
             </ul>
         </nav>
     </div>
@@ -75,8 +75,8 @@ $roles = AdminController::GetAllRoles();
                     <td><?= htmlspecialchars((string)($user['Phone'] ?? '')) ?></td>
                     <td><?= ((int)$user['IsActive'] === 1) ? 'Yes' : 'No' ?></td>
                     <td>
-                        <a href="/clinic/controllers/admin_run.php?action=updateUser&id=<?= (int)$user['Id'] ?>" class="btn-edit">Update</a>
-                        <form action="/clinic/controllers/admin_run.php?action=users" method="POST" style="display:inline;" onsubmit="return confirm('Delete this user?')">
+                        <a href="/Mental_Health/controllers/admin_run.php?action=updateUser&id=<?= (int)$user['Id'] ?>" class="btn-edit">Update</a>
+                        <form action="/Mental_Health/controllers/admin_run.php?action=users" method="POST" style="display:inline;" onsubmit="return confirm('Delete this user?')">
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="id" value="<?= (int)$user['Id'] ?>">
                             <button type="submit" class="btn-delete">Delete</button>
@@ -88,7 +88,7 @@ $roles = AdminController::GetAllRoles();
     </div>
 
     <div class="add-user">
-        <form action="/clinic/controllers/admin_run.php?action=users" method="post">
+        <form action="/Mental_Health/controllers/admin_run.php?action=users" method="post">
             <h2>Add New User</h2>
             <input type="hidden" name="action" value="add">
             <label for="username">Username:</label>

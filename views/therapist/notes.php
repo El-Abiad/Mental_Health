@@ -1,8 +1,8 @@
 <?php $title = 'Therapist Notes'; include __DIR__ . '/../shared/header.php'; ?>
 <div class="container my-4">
-    <h1 class="h3">Clinical Notes</h1>
+    <h1 class="h3">Mental_Healthal Notes</h1>
     <?php if (isset($_GET['saved'])): ?><div class="alert alert-success">Note saved.</div><?php endif; ?>
-    <form method="post" action="/clinic/controllers/therapist_run.php?action=notes" class="mb-4">
+    <form method="post" action="/Mental_Health/controllers/therapist_run.php?action=notes" class="mb-4">
         <div class="mb-2">
             <label class="form-label" for="session_id">Session ID</label>
             <input class="form-control" type="number" id="session_id" name="session_id" required>
@@ -26,6 +26,6 @@
         <?php endforeach; ?>
         </tbody>
     </table>
-    <a href="/clinic/controllers/therapist_run.php?action=dashboard">Back to Dashboard</a>
+    <a href="/Mental_Health/controllers/therapist_run.php?action=dashboard">Back to Dashboard</a>
 </div>
 <?php include __DIR__ . '/../shared/footer.php'; ?>

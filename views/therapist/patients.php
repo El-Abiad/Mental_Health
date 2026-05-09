@@ -19,6 +19,6 @@
             <div><?= nl2br(htmlspecialchars($journal['Content'] ?? '')) ?></div>
         </div>
     <?php endforeach; ?>
-    <a href="/clinic/controllers/therapist_run.php?action=dashboard">Back to Dashboard</a>
+    <a href="/Mental_Health/controllers/therapist_run.php?action=dashboard">Back to Dashboard</a>
 </div>
 <?php include __DIR__ . '/../shared/footer.php'; ?>

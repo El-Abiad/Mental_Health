@@ -1,8 +1,9 @@
-<?php $title = 'Availability'; include __DIR__ . '/../shared/header.php'; ?>
+<?php $title = 'Availability';
+include __DIR__ . '/../shared/header.php'; ?>
 <div class="container my-4">
     <h1 class="h3">Availability</h1>
     <?php if (isset($_GET['saved'])): ?><div class="alert alert-success">Availability saved.</div><?php endif; ?>
-    <form method="post" action="/clinic/controllers/therapist_run.php?action=availability" class="row g-3 mb-4">
+    <form method="post" action="/Mental_Health/controllers/therapist_run.php?action=availability" class="row g-3 mb-4">
         <div class="col-md-3">
             <label class="form-label" for="day">Day</label>
             <select class="form-select" id="day" name="day">
@@ -34,17 +35,23 @@
         </div>
     </form>
     <table class="table table-striped">
-        <thead><tr><th>Day</th><th>Start</th><th>End</th></tr></thead>
-        <tbody>
-        <?php foreach ($availability as $slot): ?>
+        <thead>
             <tr>
-                <td><?= (int)$slot['day'] ?></td>
-                <td><?= htmlspecialchars($slot['start_time']) ?></td>
-                <td><?= htmlspecialchars($slot['end_time']) ?></td>
+                <th>Day</th>
+                <th>Start</th>
+                <th>End</th>
             </tr>
-        <?php endforeach; ?>
+        </thead>
+        <tbody>
+            <?php foreach ($availability as $slot): ?>
+                <tr>
+                    <td><?= (int)$slot['day'] ?></td>
+                    <td><?= htmlspecialchars($slot['start_time']) ?></td>
+                    <td><?= htmlspecialchars($slot['end_time']) ?></td>
+                </tr>
+            <?php endforeach; ?>
         </tbody>
     </table>
-    <a href="/clinic/controllers/therapist_run.php?action=dashboard">Back to Dashboard</a>
+    <a href="/Mental_Health/controllers/therapist_run.php?action=dashboard">Back to Dashboard</a>
 </div>
 <?php include __DIR__ . '/../shared/footer.php'; ?>

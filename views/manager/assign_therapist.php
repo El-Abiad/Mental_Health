@@ -4,9 +4,9 @@
 
   <div class="d-flex align-items-center gap-2 mb-4">
 
-    <a href="/clinic/controllers/manager_run.php?action=dashboard"
-       class="btn btn-outline-secondary btn-sm">
-       ← Back
+    <a href="/Mental_Health/controllers/manager_run.php?action=dashboard"
+      class="btn btn-outline-secondary btn-sm">
+      ← Back
     </a>
 
     <h3 class="fw-bold mb-0">
@@ -22,8 +22,8 @@
       ✅ <?= htmlspecialchars($message) ?>
 
       <button type="button"
-              class="btn-close"
-              data-bs-dismiss="alert"></button>
+        class="btn-close"
+        data-bs-dismiss="alert"></button>
 
     </div>
 
@@ -36,8 +36,8 @@
       ❌ <?= htmlspecialchars($error) ?>
 
       <button type="button"
-              class="btn-close"
-              data-bs-dismiss="alert"></button>
+        class="btn-close"
+        data-bs-dismiss="alert"></button>
 
     </div>
 
@@ -48,7 +48,7 @@
     <div class="card-body p-4">
 
       <form method="POST"
-            action="/clinic/controllers/manager_run.php?action=assignTherapist">
+        action="/Mental_Health/controllers/manager_run.php?action=assignTherapist">
 
         <div class="mb-3">
 
@@ -57,8 +57,8 @@
           </label>
 
           <select name="patient_id"
-                  class="form-select"
-                  required>
+            class="form-select"
+            required>
 
             <option value="">
               — Select patient —
@@ -87,9 +87,9 @@
           </label>
 
           <select name="therapist_id"
-                  id="therapistSelect"
-                  class="form-select"
-                  required>
+            id="therapistSelect"
+            class="form-select"
+            required>
 
             <option value="">
               — Select therapist —
@@ -98,17 +98,17 @@
             <?php foreach ($therapists as $t): ?>
 
               <option value="<?= $t['Id'] ?>"
-                      data-snoozed="<?= $t['IsSnoozed'] ? '1' : '0' ?>">
+                data-snoozed="<?= $t['IsSnoozed'] ? '1' : '0' ?>">
 
                 <?= htmlspecialchars($t['FullName']) ?>
 
                 <?= $t['Specialization']
-                    ? ' — ' . htmlspecialchars($t['Specialization'])
-                    : '' ?>
+                  ? ' — ' . htmlspecialchars($t['Specialization'])
+                  : '' ?>
 
                 <?= $t['IsSnoozed']
-                    ? ' (Snoozed)'
-                    : '' ?>
+                  ? ' (Snoozed)'
+                  : '' ?>
 
               </option>
 
@@ -117,7 +117,7 @@
           </select>
 
           <div id="snoozeWarning"
-               class="form-text text-warning d-none">
+            class="form-text text-warning d-none">
 
             ⚠️ This therapist is snoozed and not accepting new patients.
 
@@ -132,10 +132,10 @@
           </label>
 
           <input type="datetime-local"
-                 name="scheduled_at"
-                 class="form-control"
-                 required
-                 min="<?= date('Y-m-d\TH:i') ?>">
+            name="scheduled_at"
+            class="form-control"
+            required
+            min="<?= date('Y-m-d\TH:i') ?>">
 
           <div class="form-text">
             Double-booking is prevented automatically
@@ -150,25 +150,25 @@
           </label>
 
           <input type="number"
-                 name="amount"
-                 class="form-control"
-                 value="200"
-                 min="0"
-                 step="0.01">
+            name="amount"
+            class="form-control"
+            value="200"
+            min="0"
+            step="0.01">
 
         </div>
 
         <div class="d-flex gap-2">
 
           <button type="submit"
-                  class="btn btn-primary px-4">
+            class="btn btn-primary px-4">
 
             Book Appointment
 
           </button>
 
-          <a href="/clinic/controllers/manager_run.php?action=dashboard"
-             class="btn btn-outline-secondary">
+          <a href="/Mental_Health/controllers/manager_run.php?action=dashboard"
+            class="btn btn-outline-secondary">
 
             Cancel
 
@@ -185,18 +185,16 @@
 </div>
 
 <script>
+  document.getElementById('therapistSelect')
+    .addEventListener('change', function() {
 
-document.getElementById('therapistSelect')
-.addEventListener('change', function () {
+      document.getElementById('snoozeWarning')
+        .classList.toggle(
+          'd-none',
+          this.options[this.selectedIndex].dataset.snoozed !== '1'
+        );
 
-    document.getElementById('snoozeWarning')
-    .classList.toggle(
-        'd-none',
-        this.options[this.selectedIndex].dataset.snoozed !== '1'
-    );
-
-});
-
+    });
 </script>
 
 <?php include __DIR__ . '/../shared/footer.php'; ?>

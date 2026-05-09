@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    header('Location: /clinic/controllers/admin_run.php?action=violations&msg=done');
+    header('Location: /Mental_Health/controllers/admin_run.php?action=violations&msg=done');
     exit;
 }
 
@@ -28,17 +28,17 @@ $reports = AdminController::GetAllViolationReports();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Violations</title>
-    <link rel="stylesheet" href="/clinic/assets/style.css">
+    <link rel="stylesheet" href="/Mental_Health/assets/style.css">
 </head>
 <body>
     <div class="nav-bar">
         <h1>Manage Violation Reports</h1>
         <nav>
             <ul>
-                <li><a href="/clinic/controllers/admin_run.php?action=dashboard">Dashboard</a></li>
-                <li><a href="/clinic/controllers/admin_run.php?action=users">Users</a></li>
-                <li><a href="/clinic/controllers/admin_run.php?action=verifyIntakeForms">Verify Intake Forms</a></li>
-                <li><a href="/clinic/controllers/auth_run.php?action=logout">Logout</a></li>
+                <li><a href="/Mental_Health/controllers/admin_run.php?action=dashboard">Dashboard</a></li>
+                <li><a href="/Mental_Health/controllers/admin_run.php?action=users">Users</a></li>
+                <li><a href="/Mental_Health/controllers/admin_run.php?action=verifyIntakeForms">Verify Intake Forms</a></li>
+                <li><a href="/Mental_Health/controllers/auth_run.php?action=logout">Logout</a></li>
             </ul>
         </nav>
     </div>
@@ -65,13 +65,13 @@ $reports = AdminController::GetAllViolationReports();
                     <td><?= htmlspecialchars((string)($report['ResolvedBy'] ?? '')) ?></td>
                     <td>
                         <?php if (($report['Status'] ?? '') !== 'Completed'): ?>
-                            <form action="/clinic/controllers/admin_run.php?action=violations" method="post" style="display:inline;">
+                            <form action="/Mental_Health/controllers/admin_run.php?action=violations" method="post" style="display:inline;">
                                 <input type="hidden" name="Action" value="Warn User">
                                 <input type="hidden" name="UserID" value="<?= (int)$report['UserId'] ?>">
                                 <input type="hidden" name="ReportID" value="<?= (int)$report['ReportId'] ?>">
                                 <button type="submit">Warn</button>
                             </form>
-                            <form action="/clinic/controllers/admin_run.php?action=violations" method="post" style="display:inline;">
+                            <form action="/Mental_Health/controllers/admin_run.php?action=violations" method="post" style="display:inline;">
                                 <input type="hidden" name="Action" value="Ban">
                                 <input type="hidden" name="UserID" value="<?= (int)$report['UserId'] ?>">
                                 <input type="hidden" name="ReportID" value="<?= (int)$report['ReportId'] ?>">

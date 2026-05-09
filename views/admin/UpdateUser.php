@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         trim($_POST['phone'] ?? ''),
         (int)($_POST['role'] ?? 3)
     );
-    header('Location: /clinic/controllers/admin_run.php?action=users&msg=updated');
+    header('Location: /Mental_Health/controllers/admin_run.php?action=users&msg=updated');
     exit;
 }
 
@@ -31,11 +31,11 @@ $currentUserRoleName = AdminController::GetUserRole((int)$user['Id']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Update User</title>
-    <link rel="stylesheet" href="/clinic/assets/style.css">
+    <link rel="stylesheet" href="/Mental_Health/assets/style.css">
 </head>
 <body>
     <div class="edit-user">
-        <form action="/clinic/controllers/admin_run.php?action=updateUser" method="post">
+        <form action="/Mental_Health/controllers/admin_run.php?action=updateUser" method="post">
             <input type="hidden" name="id" value="<?= (int)$user['Id'] ?>">
             <label for="edit-username">Username:</label>
             <input type="text" id="edit-username" name="username" value="<?= htmlspecialchars($user['Username'] ?? '') ?>" required>
@@ -54,7 +54,7 @@ $currentUserRoleName = AdminController::GetUserRole((int)$user['Id']);
                 <?php endforeach; ?>
             </select>
             <button type="submit">Update User</button>
-            <a href="/clinic/controllers/admin_run.php?action=users">Cancel</a>
+            <a href="/Mental_Health/controllers/admin_run.php?action=users">Cancel</a>
         </form>
     </div>
 </body>

@@ -86,7 +86,7 @@ class TherapistController extends BaseController
     {
         $this->requireRole('therapist');
         $this->therapistModel->endSession($sessionId, $therapistId);
-        $this->redirect('/clinic/controllers/therapist_run.php?action=session&id=' . $sessionId);
+        $this->redirect('/Mental_Health/controllers/therapist_run.php?action=session&id=' . $sessionId);
     }
 
     public function notes(int $therapistId): void
@@ -100,7 +100,7 @@ class TherapistController extends BaseController
                 $this->checkCrisisKeywords($content, $sessionId, $therapistId);
                 $this->noteModel->create(0, $therapistId, $content, $sessionId);
             }
-            $this->redirect('/clinic/controllers/therapist_run.php?action=notes&saved=1');
+            $this->redirect('/Mental_Health/controllers/therapist_run.php?action=notes&saved=1');
         }
 
         $notes = $this->noteModel->getByTherapist($therapistId);
@@ -114,7 +114,7 @@ class TherapistController extends BaseController
         $noteId = isset($_POST['note_id']) ? (int)$_POST['note_id'] : null;
 
         if ($content === '') {
-            $this->redirect('/clinic/controllers/therapist_run.php?action=session&id=' . $sessionId . '&error=empty_note');
+            $this->redirect('/Mental_Health/controllers/therapist_run.php?action=session&id=' . $sessionId . '&error=empty_note');
         }
 
         $this->checkCrisisKeywords($content, $sessionId, $therapistId);
@@ -125,7 +125,7 @@ class TherapistController extends BaseController
             $this->noteModel->create(0, $therapistId, $content, $sessionId);
         }
 
-        $this->redirect('/clinic/controllers/therapist_run.php?action=session&id=' . $sessionId . '&note_saved=1');
+        $this->redirect('/Mental_Health/controllers/therapist_run.php?action=session&id=' . $sessionId . '&note_saved=1');
     }
 
     public function profile(int $therapistId): void
@@ -140,7 +140,7 @@ class TherapistController extends BaseController
                 'IsSnoozed' => isset($_POST['is_snoozed']) ? 1 : 0,
             ];
             $this->therapistModel->updateProfile($therapistId, $data);
-            $this->redirect('/clinic/controllers/therapist_run.php?action=profile&saved=1');
+            $this->redirect('/Mental_Health/controllers/therapist_run.php?action=profile&saved=1');
         }
 
         $profile = $this->therapistModel->getProfile($therapistId);

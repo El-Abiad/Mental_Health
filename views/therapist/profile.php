@@ -2,7 +2,7 @@
 <div class="container my-4">
     <h1 class="h3">Profile</h1>
     <?php if (isset($_GET['saved'])): ?><div class="alert alert-success">Profile saved.</div><?php endif; ?>
-    <form method="post" action="/clinic/controllers/therapist_run.php?action=profile">
+    <form method="post" action="/Mental_Health/controllers/therapist_run.php?action=profile">
         <label class="form-label" for="specialization">Specialization</label>
         <input class="form-control mb-2" id="specialization" name="specialization" value="<?= htmlspecialchars($profile['Specialization'] ?? '') ?>">
         <label class="form-label" for="license_status">License Status</label>
@@ -16,6 +16,6 @@
         <br>
         <button class="btn btn-primary" type="submit">Save</button>
     </form>
-    <a href="/clinic/controllers/therapist_run.php?action=dashboard">Back to Dashboard</a>
+    <a href="/Mental_Health/controllers/therapist_run.php?action=dashboard">Back to Dashboard</a>
 </div>
 <?php include __DIR__ . '/../shared/footer.php'; ?>

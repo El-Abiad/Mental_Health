@@ -32,7 +32,7 @@ class PatientController extends BaseController
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $history = trim($_POST['medical_history'] ?? '');
             $this->patientModel->completeIntakeForm((int)$patient['id'], $history);
-            $this->redirect('/clinic/controllers/patient_run.php?action=dashboard&msg=intake_saved');
+            $this->redirect('/Mental_Health/controllers/patient_run.php?action=dashboard&msg=intake_saved');
         }
 
         require __DIR__ . '/../views/patient/intake_form.php';
@@ -46,7 +46,7 @@ class PatientController extends BaseController
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $signature = trim($_POST['signature'] ?? '');
             $this->patientModel->signAgreement((int)$patient['id'], $signature);
-            $this->redirect('/clinic/controllers/patient_run.php?action=dashboard&msg=agreement_signed');
+            $this->redirect('/Mental_Health/controllers/patient_run.php?action=dashboard&msg=agreement_signed');
         }
 
         require __DIR__ . '/../views/patient/agreements.php';
@@ -70,7 +70,7 @@ class PatientController extends BaseController
             if ($therapistId > 0) {
                 $this->patientModel->addFavorite((int)$patient['id'], $therapistId);
             }
-            $this->redirect('/clinic/controllers/patient_run.php?action=favorites&msg=saved');
+            $this->redirect('/Mental_Health/controllers/patient_run.php?action=favorites&msg=saved');
         }
 
         $favorites = $this->patientModel->getFavorites((int)$patient['id']);
@@ -90,7 +90,7 @@ class PatientController extends BaseController
             }
         }
 
-        $this->redirect('/clinic/controllers/patient_run.php?action=dashboard');
+        $this->redirect('/Mental_Health/controllers/patient_run.php?action=dashboard');
     }
 
     public function emergency(int $userId): void
