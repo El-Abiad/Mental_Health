@@ -31,7 +31,7 @@ foreach ($users as [$username, $email, $fullname, $roleId]) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clinic Setup</title>
-    <link rel="stylesheet" href="/clinic/assets/style.css">
+    <link rel="stylesheet" href="/Mental_Health/assets/style.css">
 </head>
 <body>
     <div class="form-container">
@@ -49,7 +49,7 @@ foreach ($users as [$username, $email, $fullname, $roleId]) {
                 <?php foreach ($skipped as $email): ?><li><?= htmlspecialchars($email) ?></li><?php endforeach; ?>
             </ul>
         <?php endif; ?>
-        <a href="/clinic/controllers/auth_run.php?action=login">Go to Login</a>
+        <a href="/Mental_Health/controllers/auth_run.php?action=login">Go to Login</a>
     </div>
 </body>
 </html>
