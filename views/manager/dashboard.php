@@ -1,4 +1,3 @@
-
 <?php include __DIR__ . '/../shared/header.php'; ?>
 <!DOCTYPE html>
 <html lang="en">

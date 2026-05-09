@@ -1,4 +1,16 @@
 <?php include __DIR__ . '/../shared/header.php'; ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assign Therapist</title>
+  <link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body>
+  
+</body>
+</html>
 <div class="container py-4" style="max-width:860px">
   <div class="d-flex align-items-center gap-2 mb-4">
     <a href="manager_run.php?action=dashboard" class="btn btn-outline-secondary btn-sm">← Back</a>
