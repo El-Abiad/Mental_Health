@@ -9,7 +9,7 @@ require_once __DIR__ . '/../core/BaseController.php';
 require_once __DIR__ . '/TherapistController.php';
 
 if (empty($_SESSION['user_id']) || strtolower((string)($_SESSION['role'] ?? '')) !== 'therapist') {
-    header('Location: /clinic/controllers/auth_run.php?action=login');
+    header('Location: /Mental_Health/controllers/auth_run.php?action=login');
     exit;
 }
 
