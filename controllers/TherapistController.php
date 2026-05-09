@@ -28,24 +28,17 @@ class TherapistController extends BaseController
     {
         $this->requireTherapist();
 
-        // REQ 10: show upcoming appointments + today's sessions
         $appointments = $this->therapistModel->getUpcomingAppointments($therapistId);
         $sessions     = $this->therapistModel->getTodaySessions($therapistId);
         $profile      = $this->therapistModel->getProfile($therapistId);
 
-        // REQ 25: flag high-risk patients who missed sessions without notice
         $missedHighRisk = $this->therapistModel->getMissedHighRiskPatients($therapistId);
 
-        // REQ 27: weekly mood report summary for therapist
         $weeklyMoodReports = $this->therapistModel->getWeeklyMoodReports($therapistId);
 
         require __DIR__ . '/../views/therapist/dashboard.php';
     }
 
-    // ──────────────────────────────────────────────
-    //  AVAILABILITY
-    //  REQ 26: Therapist can Snooze (stop new patients, keep existing ones)
-    // ──────────────────────────────────────────────
 
     public function availability(int $therapistId): void
     {
@@ -76,12 +69,10 @@ class TherapistController extends BaseController
             $this->therapistModel->upsertAvailability($therapistId, $day, $start, $end);
         }
 
-        // REQ 26: handle snooze toggle — stops new patient assignments
         if (isset($_POST['is_snoozed'])) {
             $snoozed = (int) $_POST['is_snoozed']; // 1 = snoozed, 0 = active
             $this->therapistModel->setSnooze($therapistId, $snoozed);
 
-            // REQ 31: notify existing patients if therapist goes inactive
             if ($snoozed === 1) {
                 $this->therapistModel->notifyPatientsTherapistSnoozed($therapistId);
             }
@@ -89,12 +80,6 @@ class TherapistController extends BaseController
 
         $this->redirect('/therapist/availability?saved=1');
     }
-
-    // ──────────────────────────────────────────────
-    //  SESSIONS
-    //  REQ 9:  Clinic manager manages cycle (Scheduled → Live → Completed & Billed)
-    //  REQ 10: Therapist manages the session and gives user access
-    // ──────────────────────────────────────────────
 
     public function viewSession(int $therapistId, int $sessionId): void
     {
@@ -112,15 +97,10 @@ class TherapistController extends BaseController
         require __DIR__ . '/../views/therapist/session_view.php';
     }
 
-    /**
-     * REQ 10: Therapist starts session → Status becomes 'in_progress' (Live)
-     * REQ 8:  Prevents double booking by locking slot on start
-     */
     public function startSession(int $therapistId, int $sessionId): void
     {
         $this->requireTherapist();
 
-        // REQ 8: check no other session is already live for this therapist
         $alreadyLive = $this->therapistModel->hasLiveSession($therapistId);
         if ($alreadyLive) {
             $this->redirect("/therapist/session/{$sessionId}?error=already_live");
@@ -131,10 +111,6 @@ class TherapistController extends BaseController
         $this->redirect("/therapist/session/{$sessionId}");
     }
 
-    /**
-     * REQ 9: Therapist ends session → Status becomes 'completed'
-     * Clinic manager then handles billing
-     */
     public function endSession(int $therapistId, int $sessionId): void
     {
         $this->requireTherapist();
@@ -142,10 +118,6 @@ class TherapistController extends BaseController
         $this->redirect("/therapist/session/{$sessionId}?ended=1");
     }
 
-    // ──────────────────────────────────────────────
-    //  CLINICAL NOTES
-    //  REQ 24: Therapist takes notes with timestamp (timestamp cannot be edited)
-    // ──────────────────────────────────────────────
 
     public function notes(int $therapistId): void
     {
@@ -163,11 +135,6 @@ class TherapistController extends BaseController
         require __DIR__ . '/../views/therapist/notes.php';
     }
 
-    /**
-     * REQ 24: Notes have a CreatedAt timestamp set once on creation — never updated.
-     *         On edit, Version is incremented but original CreatedAt is preserved.
-     *         ClinicalNote: NoteId, SessionId, TherapistId, Content, Version, CreatedAt
-     */
     public function saveNote(int $therapistId, int $sessionId): void
     {
         $this->requireTherapist();
