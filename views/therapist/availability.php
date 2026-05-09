@@ -1,55 +1,50 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Availability</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .slot { margin-bottom: 10px; }
-        input[type="time"] { margin-left: 10px; }
-    </style>
-</head>
-<body>
-    <h1>Manage Availability</h1>
-
-    <form method="POST">
-        <h2>Set Weekly Availability</h2>
-        <div class="slot">
-            <label>Monday: </label>
-            <input type="time" name="slots[1][start]" value="<?php echo $availability[0]['start_time'] ?? ''; ?>">
-            <input type="time" name="slots[1][end]" value="<?php echo $availability[0]['end_time'] ?? ''; ?>">
+<?php $title = 'Availability'; include __DIR__ . '/../shared/header.php'; ?>
+<div class="container my-4">
+    <h1 class="h3">Availability</h1>
+    <?php if (isset($_GET['saved'])): ?><div class="alert alert-success">Availability saved.</div><?php endif; ?>
+    <form method="post" action="/clinic/controllers/therapist_run.php?action=availability" class="row g-3 mb-4">
+        <div class="col-md-3">
+            <label class="form-label" for="day">Day</label>
+            <select class="form-select" id="day" name="day">
+                <option value="1">Monday</option>
+                <option value="2">Tuesday</option>
+                <option value="3">Wednesday</option>
+                <option value="4">Thursday</option>
+                <option value="5">Friday</option>
+                <option value="6">Saturday</option>
+                <option value="7">Sunday</option>
+            </select>
         </div>
-        <div class="slot">
-            <label>Tuesday: </label>
-            <input type="time" name="slots[2][start]" value="<?php echo $availability[1]['start_time'] ?? ''; ?>">
-            <input type="time" name="slots[2][end]" value="<?php echo $availability[1]['end_time'] ?? ''; ?>">
+        <div class="col-md-3">
+            <label class="form-label" for="start">Start</label>
+            <input class="form-control" type="time" id="start" name="start" required>
         </div>
-        <div class="slot">
-            <label>Wednesday: </label>
-            <input type="time" name="slots[3][start]" value="<?php echo $availability[2]['start_time'] ?? ''; ?>">
-            <input type="time" name="slots[3][end]" value="<?php echo $availability[2]['end_time'] ?? ''; ?>">
+        <div class="col-md-3">
+            <label class="form-label" for="end">End</label>
+            <input class="form-control" type="time" id="end" name="end" required>
         </div>
-        <div class="slot">
-            <label>Thursday: </label>
-            <input type="time" name="slots[4][start]" value="<?php echo $availability[3]['start_time'] ?? ''; ?>">
-            <input type="time" name="slots[4][end]" value="<?php echo $availability[3]['end_time'] ?? ''; ?>">
+        <div class="col-md-3 d-flex align-items-end">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" name="is_snoozed" value="1" <?= !empty($profile['IsSnoozed']) ? 'checked' : '' ?>>
+                Snoozed
+            </label>
         </div>
-        <div class="slot">
-            <label>Friday: </label>
-            <input type="time" name="slots[5][start]" value="<?php echo $availability[4]['start_time'] ?? ''; ?>">
-            <input type="time" name="slots[5][end]" value="<?php echo $availability[4]['end_time'] ?? ''; ?>">
+        <div class="col-12">
+            <button class="btn btn-primary" type="submit">Save</button>
         </div>
-
-        <h2>Snooze Status</h2>
-        <label>
-            <input type="checkbox" name="is_snoozed" value="1" <?php echo ($profile['is_snoozed'] ?? 0) ? 'checked' : ''; ?>>
-            Snooze (stop accepting new patients)
-        </label><br><br>
-
-        <button type="submit">Update Availability</button>
     </form>
-
-    <a href="/therapist/dashboard">Back to Dashboard</a>
-</body>
-</html>
+    <table class="table table-striped">
+        <thead><tr><th>Day</th><th>Start</th><th>End</th></tr></thead>
+        <tbody>
+        <?php foreach ($availability as $slot): ?>
+            <tr>
+                <td><?= (int)$slot['day'] ?></td>
+                <td><?= htmlspecialchars($slot['start_time']) ?></td>
+                <td><?= htmlspecialchars($slot['end_time']) ?></td>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+    <a href="/clinic/controllers/therapist_run.php?action=dashboard">Back to Dashboard</a>
+</div>
+<?php include __DIR__ . '/../shared/footer.php'; ?>

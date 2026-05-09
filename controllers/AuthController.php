@@ -8,11 +8,7 @@ class AuthController extends BaseController {
 
     public function login(): void {
         if ($this->isLoggedIn()) {
-            if (empty($_SESSION['role'])) {
-                session_destroy();
-            } else {
-                $this->redirectByRole($_SESSION['role']);
-            }
+            $this->redirectByRole($_SESSION['role']);
         }
         $this->view('auth/login');
     }
@@ -38,14 +34,8 @@ class AuthController extends BaseController {
             return;
         }
 
-        $role = User::getRole($user['Id']);
-        if (!$role) {
-            $this->view('auth/login', ['error' => 'Your account is corrupted (no role assigned). Please contact support or register again.']);
-            return;
-        }
-
         $_SESSION['user_id'] = $user['Id'];
-        $_SESSION['role']    = $role;
+        $_SESSION['role']    = User::getRole($user['Id']);
         $_SESSION['name']    = $user['FullName'];
 
         $this->redirectByRole($_SESSION['role']);
@@ -75,13 +65,8 @@ class AuthController extends BaseController {
             return;
         }
 
-        if (User::findByUsername($username)) {
-            $this->view('auth/register', ['error' => 'Username already exists.']);
-            return;
-        }
-
         $hashed = Encryption::hashPassword($password);
-        User::create($username, $email, $hashed, $fullname, '3', $phone);
+        User::create($username, $email, $hashed, $fullname, 3, $phone);
 
         $this->view('auth/login', ['success' => 'Account created. Please log in.']);
     }
@@ -91,9 +76,9 @@ class AuthController extends BaseController {
         $this->redirect('/clinic/controllers/auth_run.php?action=login');
     }
 
-    // FIX: redirect to run files (controllers) not views directly
+   
     private function redirectByRole(string $role): void {
-        switch ($role) {
+        switch (strtolower($role)) {
             case 'admin':     $this->redirect('/clinic/controllers/admin_run.php?action=dashboard');     break;
             case 'manager':   $this->redirect('/clinic/controllers/manager_run.php?action=dashboard');   break;
             case 'therapist': $this->redirect('/clinic/controllers/therapist_run.php?action=dashboard'); break;

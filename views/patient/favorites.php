@@ -1,36 +1,53 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Favorite Therapists</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .therapist { border: 1px solid #ccc; padding: 15px; margin: 10px 0; }
-        .add-form { margin-top: 20px; }
-    </style>
-</head>
-<body>
-    <h1>My Favorite Therapists</h1>
-
-    <?php foreach ($favorites as $therapist): ?>
-        <div class="therapist">
-            <h3><?php echo htmlspecialchars($therapist['name']); ?></h3>
-            <p><strong>Specialties:</strong> <?php echo htmlspecialchars($therapist['specialties'] ?? ''); ?></p>
-            <p><strong>License Verified:</strong> <?php echo $therapist['license_verified'] ? 'Yes' : 'No'; ?></p>
-            <p><strong>Available:</strong> <?php echo $therapist['is_snoozed'] ? 'Currently unavailable' : 'Available'; ?></p>
-        </div>
-    <?php endforeach; ?>
-
-    <div class="add-form">
-        <h2>Add Therapist to Favorites</h2>
-        <form method="POST">
-            <label for="therapist_id">Therapist ID:</label>
-            <input type="number" id="therapist_id" name="therapist_id" required><br><br>
-            <button type="submit">Add to Favorites</button>
-        </form>
+<?php $title = 'Therapists'; include __DIR__ . '/../shared/header.php'; ?>
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Therapists</h1>
+        <a class="btn btn-outline-primary" href="/clinic/controllers/patient_run.php?action=dashboard">Dashboard</a>
     </div>
 
-    <a href="/patient/dashboard">Back to Dashboard</a>
-</body>
-</html>
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h2 class="h5 mb-0">Available Therapists</h2>
+                </div>
+                <div class="card-body">
+                    <?php if (empty($favorites)): ?>
+                        <p class="text-muted mb-0">No therapists found.</p>
+                    <?php else: ?>
+                        <div class="row g-3">
+                            <?php foreach ($favorites as $therapist): ?>
+                                <div class="col-md-6">
+                                    <div class="border rounded p-3 h-100">
+                                        <h3 class="h6 mb-2"><?= htmlspecialchars($therapist['name'] ?? '') ?></h3>
+                                        <p class="mb-1"><strong>Specialty:</strong> <?= htmlspecialchars($therapist['specialties'] ?? 'Not specified') ?></p>
+                                        <p class="mb-1"><strong>License:</strong> <?= !empty($therapist['license_verified']) ? 'Verified' : 'Pending' ?></p>
+                                        <p class="mb-0"><strong>Status:</strong> <?= !empty($therapist['is_snoozed']) ? 'Unavailable' : 'Available' ?></p>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h2 class="h5 mb-0">Add Favorite</h2>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label class="form-label" for="therapist_id">Therapist ID</label>
+                            <input class="form-control" type="number" id="therapist_id" name="therapist_id" required>
+                        </div>
+                        <button class="btn btn-primary" type="submit">Add to Favorites</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<?php include __DIR__ . '/../shared/footer.php'; ?>

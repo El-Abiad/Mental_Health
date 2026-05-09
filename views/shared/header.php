@@ -32,8 +32,13 @@
                     <li class="nav-item"><a class="nav-link" href="/clinic/controllers/admin_run.php?action=violations">Violations</a></li>
                 <?php elseif ($_SESSION['role'] === 'therapist'): ?>
                     <li class="nav-item"><a class="nav-link" href="/clinic/controllers/therapist_run.php?action=dashboard">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/clinic/controllers/therapist_run.php?action=notes">Notes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/clinic/controllers/therapist_run.php?action=availability">Availability</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/clinic/controllers/therapist_run.php?action=profile">Profile</a></li>
                 <?php elseif ($_SESSION['role'] === 'patient'): ?>
                     <li class="nav-item"><a class="nav-link" href="/clinic/controllers/patient_run.php?action=dashboard">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/clinic/controllers/patient_run.php?action=sessions">Sessions</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/clinic/controllers/patient_run.php?action=favorites">Therapists</a></li>
                 <?php endif; ?>
             </ul>
             <?php endif; ?>

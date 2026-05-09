@@ -1,18 +1,18 @@
 <?php
-// FIX: title variable for header
+
 $title = 'Manager Dashboard';
 include __DIR__ . '/../shared/header.php';
 ?>
 
 <div class="container-fluid px-4">
 
-  <!-- Page title -->
+
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="fw-bold mb-0"><i class="bi bi-speedometer2 me-2 text-primary"></i>Manager Dashboard</h4>
     <span class="text-muted">Welcome back, <strong><?= htmlspecialchars($_SESSION['name'] ?? 'Manager') ?></strong></span>
   </div>
 
-  <!-- Stats Cards -->
+
   <div class="row g-3 mb-4">
     <?php
     $cards = [
@@ -40,7 +40,7 @@ include __DIR__ . '/../shared/header.php';
     <?php endforeach; ?>
   </div>
 
-  <!-- Quick Actions -->
+
   <div class="row g-3 mb-4">
     <div class="col-md-4">
       <a href="/clinic/controllers/manager_run.php?action=assignTherapist"
@@ -96,7 +96,7 @@ include __DIR__ . '/../shared/header.php';
     </div>
   </div>
 
-  <!-- Upcoming Appointments -->
+
   <div class="card border-0 shadow-sm mb-4">
     <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center pt-3">
       <h6 class="fw-bold mb-0"><i class="bi bi-clock-history me-2 text-primary"></i>Upcoming Appointments</h6>
@@ -131,7 +131,7 @@ include __DIR__ . '/../shared/header.php';
     </div>
   </div>
 
-  <!-- Cancelled Sessions -->
+
   <?php if (!empty($cancelled)): ?>
   <div class="card border-0 shadow-sm border-start border-danger border-3">
     <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center pt-3">

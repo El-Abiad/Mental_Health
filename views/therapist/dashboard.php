@@ -1,61 +1,56 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Therapist Dashboard</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .section { margin-bottom: 30px; }
-        .appointment, .session { border: 1px solid #ccc; padding: 10px; margin: 5px 0; }
-    </style>
-</head>
-<body>
-    <h1>Therapist Dashboard</h1>
+<?php $title = 'Therapist Dashboard'; include __DIR__ . '/../shared/header.php'; ?>
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h3 mb-0">Therapist Dashboard</h1>
+        <div class="btn-group">
+            <a class="btn btn-outline-primary" href="/clinic/controllers/therapist_run.php?action=availability">Availability</a>
+            <a class="btn btn-outline-primary" href="/clinic/controllers/therapist_run.php?action=profile">Profile</a>
+            <a class="btn btn-outline-primary" href="/clinic/controllers/therapist_run.php?action=notes">Notes</a>
+            <a class="btn btn-outline-primary" href="/clinic/controllers/therapist_run.php?action=patients">Patients</a>
+        </div>
+    </div>
 
-    <div class="section">
-        <h2>Upcoming Appointments</h2>
+    <h2 class="h5">Upcoming Appointments</h2>
+    <table class="table table-striped">
+        <thead><tr><th>Patient</th><th>Date</th><th>Status</th></tr></thead>
+        <tbody>
         <?php foreach ($appointments as $appointment): ?>
-            <div class="appointment">
-                <p>Patient: <?php echo htmlspecialchars($appointment['patient_name']); ?></p>
-                <p>Date: <?php echo htmlspecialchars($appointment['date']); ?></p>
-            </div>
+            <tr>
+                <td><?= htmlspecialchars($appointment['patient_name'] ?? '') ?></td>
+                <td><?= htmlspecialchars($appointment['date'] ?? '') ?></td>
+                <td><?= htmlspecialchars($appointment['status'] ?? '') ?></td>
+            </tr>
         <?php endforeach; ?>
-    </div>
+        </tbody>
+    </table>
 
-    <div class="section">
-        <h2>Today's Sessions</h2>
+    <h2 class="h5 mt-4">Today's Sessions</h2>
+    <table class="table table-striped">
+        <thead><tr><th>Patient</th><th>Date</th><th>Status</th><th></th></tr></thead>
+        <tbody>
         <?php foreach ($sessions as $session): ?>
-            <div class="session">
-                <p>Patient: <?php echo htmlspecialchars($session['patient_name']); ?></p>
-                <p>Time: <?php echo htmlspecialchars($session['time']); ?></p>
-                <a href="/therapist/session/<?php echo $session['id']; ?>">View Session</a>
-            </div>
+            <tr>
+                <td><?= htmlspecialchars($session['patient_name'] ?? '') ?></td>
+                <td><?= htmlspecialchars($session['date'] ?? '') ?></td>
+                <td><?= htmlspecialchars($session['status'] ?? '') ?></td>
+                <td><a class="btn btn-sm btn-primary" href="/clinic/controllers/therapist_run.php?action=session&id=<?= (int)$session['id'] ?>">Open</a></td>
+            </tr>
         <?php endforeach; ?>
-    </div>
+        </tbody>
+    </table>
 
-    <div class="section">
-        <h2>Missed High-Risk Patients</h2>
-        <?php foreach ($missedHighRisk as $patient): ?>
-            <div class="appointment">
-                <p>Patient: <?php echo htmlspecialchars($patient['name']); ?></p>
-                <p>Last Session: <?php echo htmlspecialchars($patient['last_session']); ?></p>
-            </div>
-        <?php endforeach; ?>
-    </div>
-
-    <div class="section">
-        <h2>Weekly Mood Reports</h2>
+    <h2 class="h5 mt-4">Weekly Mood Summary</h2>
+    <table class="table table-striped">
+        <thead><tr><th>Patient</th><th>Average Mood</th><th>Logs</th></tr></thead>
+        <tbody>
         <?php foreach ($weeklyMoodReports as $report): ?>
-            <div class="appointment">
-                <p>Patient: <?php echo htmlspecialchars($report['patient_name']); ?></p>
-                <p>Mood: <?php echo htmlspecialchars($report['mood']); ?></p>
-                <p>Date: <?php echo htmlspecialchars($report['date']); ?></p>
-            </div>
+            <tr>
+                <td><?= htmlspecialchars($report['patient_name'] ?? '') ?></td>
+                <td><?= htmlspecialchars(number_format((float)($report['avg_mood'] ?? 0), 1)) ?></td>
+                <td><?= (int)($report['logs_count'] ?? 0) ?></td>
+            </tr>
         <?php endforeach; ?>
-    </div>
-
-    <a href="/therapist/availability">Manage Availability</a>
-    <a href="/therapist/notes">View Notes</a>
-</body>
-</html>
+        </tbody>
+    </table>
+</div>
+<?php include __DIR__ . '/../shared/footer.php'; ?>

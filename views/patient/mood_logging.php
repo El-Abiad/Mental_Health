@@ -1,111 +1,28 @@
 <!DOCTYPE html>
 <html lang="ar">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تسجيل الحالة المزاجية - منصة الصحة النفسية</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-            background-color: #f5f5f5;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-
-        form {
-            display: flex;
-            flex-direction: column;
-        }
-
-        label {
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        select,
-        textarea {
-            margin-bottom: 15px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-
-        button {
-            padding: 12px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        button:hover {
-            background-color: #45a049;
-        }
-
-        .back-link {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .back-link a {
-            color: #667eea;
-            text-decoration: none;
-        }
-
-        .back-link a:hover {
-            text-decoration: underline;
-        }
-
-        .mood-options {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .mood-option {
-            flex: 1;
-            padding: 15px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .mood-option:hover {
-            border-color: #667eea;
-            background-color: #f0f4ff;
-        }
-
-        .mood-option.selected {
-            border-color: #667eea;
-            background-color: #667eea;
-            color: white;
-        }
-
-        .mood-emoji {
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #333; }
+        form { display: flex; flex-direction: column; }
+        label { margin-bottom: 5px; font-weight: bold; }
+        select, textarea { margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        button { padding: 12px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #45a049; }
+        .back-link { text-align: center; margin-top: 20px; }
+        .back-link a { color: #667eea; text-decoration: none; }
+        .back-link a:hover { text-decoration: underline; }
+        .mood-options { display: flex; gap: 10px; margin-bottom: 15px; }
+        .mood-option { flex: 1; padding: 15px; border: 2px solid #ddd; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.3s; }
+        .mood-option:hover { border-color: #667eea; background-color: #f0f4ff; }
+        .mood-option.selected { border-color: #667eea; background-color: #667eea; color: white; }
+        .mood-emoji { font-size: 24px; margin-bottom: 5px; }
     </style>
 </head>
-
 <body>
     <div class="container">
         <h1>تسجيل الحالة المزاجية</h1>
@@ -176,7 +93,9 @@
 
         moodOptions.forEach(option => {
             option.addEventListener('click', function() {
+                // Remove selected class from all options
                 moodOptions.forEach(opt => opt.classList.remove('selected'));
+                // Add selected class to clicked option
                 this.classList.add('selected');
                 // Update hidden input
                 selectedMoodInput.value = this.dataset.mood;
@@ -187,5 +106,4 @@
         document.querySelector('.mood-option[data-mood="happy"]').classList.add('selected');
     </script>
 </body>
-
 </html>

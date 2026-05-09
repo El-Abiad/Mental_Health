@@ -1,120 +1,119 @@
 <?php
+
 require_once __DIR__ . '/../core/BaseController.php';
 require_once __DIR__ . '/../models/Patient.php';
 
-class PatientController extends BaseController {
+class PatientController extends BaseController
+{
     private Patient $patientModel;
 
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct();
         $this->patientModel = new Patient();
     }
 
-    public function dashboard(int $userId): void {
-        $patient = $this->patientModel->getPatientByUserId($userId);
-        if (!$patient) {
-            echo "Patient profile not found";
-            return;
-        }
-        $patientId = $patient['id'];
-        $upcomingSessions = $this->patientModel->getUpcomingSessions($patientId);
-        $moodLogs = $this->patientModel->getMoodLogs($patientId);
+    public function dashboard(int $userId): void
+    {
+        $this->requireRole('patient');
+        $patient = $this->ensurePatient($userId);
+
+        $upcomingSessions = $this->patientModel->getUpcomingSessions((int)$patient['id']);
+        $moodLogs = $this->patientModel->getMoodLogs((int)$patient['id']);
 
         require __DIR__ . '/../views/patient/dashboard.php';
     }
 
-    public function intakeForm(int $userId): void {
-        $patient = $this->patientModel->getPatientByUserId($userId);
-        if (!$patient) {
-            echo "Patient profile not found";
-            return;
-        }
+    public function intakeForm(int $userId): void
+    {
+        $this->requireRole('patient');
+        $patient = $this->ensurePatient($userId);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $this->processIntakeForm($patient['id']);
-            return;
+            $history = trim($_POST['medical_history'] ?? '');
+            $this->patientModel->completeIntakeForm((int)$patient['id'], $history);
+            $this->redirect('/clinic/controllers/patient_run.php?action=dashboard&msg=intake_saved');
         }
 
         require __DIR__ . '/../views/patient/intake_form.php';
     }
 
-    private function processIntakeForm(int $patientId): void {
-        // Process form data
-        $this->patientModel->completeIntakeForm($patientId);
-        $this->redirect('/clinic/controllers/patient_run.php?action=dashboard');
-    }
-
-    public function agreements(int $userId): void {
-        $patient = $this->patientModel->getPatientByUserId($userId);
-        if (!$patient) {
-            echo "Patient profile not found";
-            return;
-        }
+    public function agreements(int $userId): void
+    {
+        $this->requireRole('patient');
+        $patient = $this->ensurePatient($userId);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $this->signAgreement($patient['id']);
-            return;
+            $signature = trim($_POST['signature'] ?? '');
+            $this->patientModel->signAgreement((int)$patient['id'], $signature);
+            $this->redirect('/clinic/controllers/patient_run.php?action=dashboard&msg=agreement_signed');
         }
 
         require __DIR__ . '/../views/patient/agreements.php';
     }
 
-    private function signAgreement(int $patientId): void {
-        $this->patientModel->signAgreement($patientId);
-        $this->redirect('/clinic/controllers/patient_run.php?action=dashboard');
-    }
-
-    public function sessions(int $userId): void {
-        $patient = $this->patientModel->getPatientByUserId($userId);
-        if (!$patient) {
-            echo "Patient profile not found";
-            return;
-        }
-
-        $sessions = $this->patientModel->getUpcomingSessions($patient['id']);
+    public function sessions(int $userId): void
+    {
+        $this->requireRole('patient');
+        $patient = $this->ensurePatient($userId);
+        $sessions = $this->patientModel->getUpcomingSessions((int)$patient['id']);
         require __DIR__ . '/../views/patient/sessions.php';
     }
 
-    public function favorites(int $userId): void {
-        $patient = $this->patientModel->getPatientByUserId($userId);
-        if (!$patient) {
-            echo "Patient profile not found";
-            return;
-        }
+    public function favorites(int $userId): void
+    {
+        $this->requireRole('patient');
+        $patient = $this->ensurePatient($userId);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $this->addFavorite($patient['id']);
-            return;
+            $therapistId = (int)($_POST['therapist_id'] ?? 0);
+            if ($therapistId > 0) {
+                $this->patientModel->addFavorite((int)$patient['id'], $therapistId);
+            }
+            $this->redirect('/clinic/controllers/patient_run.php?action=favorites&msg=saved');
         }
 
-        $favorites = $this->patientModel->getFavorites($patient['id']);
+        $favorites = $this->patientModel->getFavorites((int)$patient['id']);
         require __DIR__ . '/../views/patient/favorites.php';
     }
 
-    private function addFavorite(int $patientId): void {
-        $therapistId = (int) $_POST['therapist_id'];
-        $this->patientModel->addFavorite($patientId, $therapistId);
-        $this->redirect('/clinic/controllers/patient_run.php?action=favorites');
-    }
-
-    public function logMood(int $userId): void {
-        $patient = $this->patientModel->getPatientByUserId($userId);
-        if (!$patient) {
-            echo "Patient profile not found";
-            return;
-        }
+    public function logMood(int $userId): void
+    {
+        $this->requireRole('patient');
+        $patient = $this->ensurePatient($userId);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $mood = $_POST['mood'] ?? '';
-            $notes = $_POST['notes'] ?? '';
-            $this->patientModel->addMoodLog($patient['id'], $mood, $notes);
+            $mood = trim($_POST['mood'] ?? '');
+            $notes = trim($_POST['notes'] ?? '');
+            if ($mood !== '') {
+                $this->patientModel->addMoodLog((int)$patient['id'], $mood, $notes);
+            }
         }
 
         $this->redirect('/clinic/controllers/patient_run.php?action=dashboard');
     }
 
-    protected function redirect(string $url): void {
-        header("Location: $url");
-        exit;
+    public function emergency(int $userId): void
+    {
+        $this->requireRole('patient');
+        $patient = $this->ensurePatient($userId);
+
+        if (isset($_GET['trigger'])) {
+            $this->patientModel->triggerCrisis((int)$patient['id']);
+            $message = 'Emergency alert sent.';
+        }
+
+        require __DIR__ . '/../views/patient/emergency.php';
+    }
+
+    private function ensurePatient(int $userId): array
+    {
+        $patient = $this->patientModel->getPatientByUserId($userId);
+        if (!$patient) {
+            http_response_code(404);
+            echo 'Patient profile not found.';
+            exit;
+        }
+        return $patient;
     }
 }

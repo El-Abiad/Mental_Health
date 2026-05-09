@@ -22,7 +22,7 @@
             <button type="submit">Register</button>
         </form>
 
-        <p>Already have an account? <a href="/clinic/views/auth/login.php">Login</a></p>
+        <p>Already have an account? <a href="/clinic/controllers/auth_run.php?action=login">Login</a></p>
     </div>
 </body>
 </html>

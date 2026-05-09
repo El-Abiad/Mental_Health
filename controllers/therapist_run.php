@@ -8,51 +8,43 @@ require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../core/BaseController.php';
 require_once __DIR__ . '/TherapistController.php';
 
-if (
-    empty($_SESSION['user_id']) ||
-    ($_SESSION['role'] ?? '') !== 'therapist'
-) {
-    header('Location: ../views/auth/login.php');
+if (empty($_SESSION['user_id']) || strtolower((string)($_SESSION['role'] ?? '')) !== 'therapist') {
+    header('Location: /clinic/controllers/auth_run.php?action=login');
     exit;
 }
 
 $controller = new TherapistController();
-
+$therapistId = (int)$_SESSION['user_id'];
 $action = $_GET['action'] ?? 'dashboard';
+$sessionId = (int)($_GET['id'] ?? $_POST['session_id'] ?? 0);
 
-$allowed = [
-    'dashboard',
-    'availability',
-    'viewSession',
-    'startSession',
-    'endSession',
-    'notes',
-    'saveNote',
-    'profile',
-    'cancelAppointment',
-    'patients',
-    'patientMoodReport'
-];
-
-// Map arguments where necessary
-$therapistId = $_SESSION['user_id'];
-
-if (in_array($action, $allowed, true)) {
-    // Basic routing logic, some methods take a second parameter like sessionId or patientId
-    // which should come from $_GET or $_POST. 
-    $sessionId = isset($_GET['session_id']) ? (int)$_GET['session_id'] : (isset($_POST['session_id']) ? (int)$_POST['session_id'] : 0);
-    $patientId = isset($_GET['patient_id']) ? (int)$_GET['patient_id'] : (isset($_POST['patient_id']) ? (int)$_POST['patient_id'] : 0);
-    $appointmentId = isset($_GET['appointment_id']) ? (int)$_GET['appointment_id'] : (isset($_POST['appointment_id']) ? (int)$_POST['appointment_id'] : 0);
-
-    if ($action === 'viewSession' || $action === 'startSession' || $action === 'endSession' || $action === 'saveNote') {
-        $controller->$action($therapistId, $sessionId);
-    } elseif ($action === 'patientMoodReport') {
-        $controller->$action($therapistId, $patientId);
-    } elseif ($action === 'cancelAppointment') {
-        $controller->$action($therapistId, $appointmentId);
-    } else {
-        $controller->$action($therapistId);
-    }
-} else {
-    $controller->dashboard($therapistId);
+switch ($action) {
+    case 'availability':
+        $controller->availability($therapistId);
+        break;
+    case 'session':
+        $controller->viewSession($therapistId, $sessionId);
+        break;
+    case 'startSession':
+        $controller->startSession($therapistId, $sessionId);
+        break;
+    case 'endSession':
+        $controller->endSession($therapistId, $sessionId);
+        break;
+    case 'notes':
+        $controller->notes($therapistId);
+        break;
+    case 'saveNote':
+        $controller->saveNote($therapistId, $sessionId);
+        break;
+    case 'profile':
+        $controller->profile($therapistId);
+        break;
+    case 'patients':
+        $controller->patients($therapistId);
+        break;
+    case 'dashboard':
+    default:
+        $controller->dashboard($therapistId);
+        break;
 }

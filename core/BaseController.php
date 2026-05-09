@@ -12,7 +12,7 @@ class BaseController {
 
     protected function view(string $path, array $data = []): void {
         extract($data);
-        require_once __DIR__ . '/../views/' . $path . '.php';
+        require __DIR__ . '/../views/' . $path . '.php';
     }
 
     protected function redirect(string $url): void {
@@ -26,14 +26,18 @@ class BaseController {
 
     protected function requireLogin(): void {
         if (!$this->isLoggedIn()) {
-            $this->redirect('../auth/login.php');
+            $this->redirect('/clinic/controllers/auth_run.php?action=login');
         }
     }
 
     protected function requireRole(string $role): void {
         $this->requireLogin();
-        if ($_SESSION['role'] !== $role) {
-            $this->redirect('../auth/login.php');
+        if (strtolower((string)($_SESSION['role'] ?? '')) !== strtolower($role)) {
+            $this->redirect('/clinic/controllers/auth_run.php?action=login');
         }
+    }
+
+    protected function currentUserId(): int {
+        return (int)($_SESSION['user_id'] ?? 0);
     }
 }

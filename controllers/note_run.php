@@ -1,21 +1,15 @@
 <?php
-require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/NoteController.php';
 
-$noteController = new NoteController();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-echo "--- Note Module ---\n";
+$role = strtolower((string)($_SESSION['role'] ?? ''));
 
-// Create a note
-$note = $noteController->createNote(1, 1, "Patient reported feeling anxious.");
-echo "Note created: " . $note['content'] . " at " . $note['timestamp'] . "\n";
+if ($role === 'therapist') {
+    header('Location: /clinic/controllers/therapist_run.php?action=notes');
+    exit;
+}
 
-// Get patient notes
-$patientNotes = $noteController->getPatientNotes(1);
-echo "Patient has " . count($patientNotes) . " notes.\n";
-
-// Get therapist notes
-$therapistNotes = $noteController->getTherapistNotes(1);
-echo "Therapist has " . count($therapistNotes) . " notes.\n";
-
-echo "Note run completed.\n";
+header('Location: /clinic/controllers/auth_run.php?action=login');
+exit;

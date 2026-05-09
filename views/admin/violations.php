@@ -1,96 +1,88 @@
 <?php
-require_once "../../controllers/AdminController.php";
+require_once __DIR__ . '/../../controllers/AdminController.php';
 
-if($_SERVER["REQUEST_METHOD"]==='GET' && isset($_GET["Action"])  && $_GET["Action"]==="Warn User"){
-    $userid=$_GET["UserID"];
-    $reportid=$_GET["ReportID"];
-    if(AdminController::ChangeViolationReportStatus($reportid,"Completed")){
-        AdminController::GiveWarning($userid,"Don't Do This Again");
-        echo "Report Completed Successfully";
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $action = $_POST['Action'] ?? '';
+    $userId = (int)($_POST['UserID'] ?? 0);
+    $reportId = (int)($_POST['ReportID'] ?? 0);
+
+    if ($reportId > 0 && $userId > 0) {
+        AdminController::ChangeViolationReportStatus($reportId, 'Completed');
+        if ($action === 'Warn User') {
+            AdminController::GiveWarning($userId, "Don't Do This Again");
+        }
+        if ($action === 'Ban') {
+            AdminController::GiveBan($userId);
+        }
     }
-    else{
-        echo "Report Completed Failed";
-    }
+
+    header('Location: /clinic/controllers/admin_run.php?action=violations&msg=done');
+    exit;
 }
-if($_SERVER["REQUEST_METHOD"]==='GET' && isset($_GET["Action"])  && $_GET["Action"]==="Bann"){
-    $userid=$_GET["UserID"];
-    $reportid=$_GET["ReportID"];
-    if(AdminController::ChangeViolationReportStatus($reportid,"Completed")){
-        AdminController::GiveBan($userid);
-        echo "Report Completed Successfully";
-    }
-    else{
-        echo "Report Completed Failed";
-    }
-}
+
+$reports = AdminController::GetAllViolationReports();
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Violations Reports</title>
-    <link rel="stylesheet" href="../../assets/style.css">
+    <title>Violations</title>
+    <link rel="stylesheet" href="/clinic/assets/style.css">
 </head>
 <body>
     <div class="nav-bar">
-        <h1>Manage Violations</h1>
+        <h1>Manage Violation Reports</h1>
         <nav>
             <ul>
-                <li><a href="../admin/dashboard.php">Dashboard</a></li>
-                <li><a href="../admin/users.php">Users</a></li>
-                <li><a href="../admin/VerifyIntakeForms.php">Verify Intake Forms</a></li>
-                <li><a href="../auth/login.php">Logout</a></li>
+                <li><a href="/clinic/controllers/admin_run.php?action=dashboard">Dashboard</a></li>
+                <li><a href="/clinic/controllers/admin_run.php?action=users">Users</a></li>
+                <li><a href="/clinic/controllers/admin_run.php?action=verifyIntakeForms">Verify Intake Forms</a></li>
+                <li><a href="/clinic/controllers/auth_run.php?action=logout">Logout</a></li>
             </ul>
         </nav>
     </div>
-    <div class="Violation-table">
+    <?php if (isset($_GET['msg'])): ?>
+        <p class="success">Action completed.</p>
+    <?php endif; ?>
+    <div class="users-table">
         <table border="1" cellpadding="10" cellspacing="0">
             <tr>
-                <th>ReportID</th>
-                <th>Username</th>
+                <th>Report ID</th>
+                <th>User</th>
                 <th>Reason</th>
                 <th>Status</th>
-                <th>ResolvedBy</th>
+                <th>Resolved By</th>
                 <th>Actions</th>
             </tr>
-            <?php
-            $Reports=AdminController::GetAllViolationReports();
-            if (!empty($Reports) && is_array($Reports)):
-            ?>
-                <?php foreach ($Reports as $Report): ?>
-                    <tr>
-                        <td class="ReportID"><?php  echo $Report['ReportId']; ?></td>
-                        <td class="Username"><?php $user=AdminController::GetUserById(intval($Report['UserId']));
-                        echo $user["Username"]; ?></td>
-                        <td class="Reason"><?php echo $Report['Reason']; ?></td>
-                        <td class="Status"><?php echo $Report['Status']?></td>
-                        <td class="ResolvedBy"><?php echo $Report['ResolvedBy']; ?></td>
-                        <?php if($Report["Status"]!="Completed"):?>
-                        <td>
-                            <form action="violations.php" method="get">
-                                <input type="text" name="Action" value="Warn User" hidden>
-                                <input type="text" name="UserID" value="<?php echo $Report["UserId"]?>"hidden>
-                                <input type="text" name="ReportID" value="<?php echo $Report["ReportId"]?>"hidden>
-                                <button type="submit">Warn User</button>
-                            </form>
-                            <form action="violations.php" method="get">
-                                <input type="text" name="Action" value="Bann" hidden>
-                                <input type="text" name="UserID" value="<?php echo $Report["UserId"]?>"hidden>
-                                <input type="text" name="ReportID" value="<?php echo $Report["ReportId"]?>"hidden>
-                                <button type="submit">Ban User</button>
-                            </form>
-                        </td>
-                        <?php else: ?>
-                            <td>The Report Is Completed</td>
-                        <?php endif;?>
-                    </tr>
-                <?php endforeach; ?>
-            <?php else: ?>
+            <?php foreach ($reports as $report): ?>
+                <?php $user = AdminController::GetUserById((int)$report['UserId']); ?>
                 <tr>
-                    <td colspan="6">No users found.</td>
+                    <td><?= (int)$report['ReportId'] ?></td>
+                    <td><?= htmlspecialchars($user['Username'] ?? 'Unknown') ?></td>
+                    <td><?= htmlspecialchars((string)$report['Reason']) ?></td>
+                    <td><?= htmlspecialchars((string)$report['Status']) ?></td>
+                    <td><?= htmlspecialchars((string)($report['ResolvedBy'] ?? '')) ?></td>
+                    <td>
+                        <?php if (($report['Status'] ?? '') !== 'Completed'): ?>
+                            <form action="/clinic/controllers/admin_run.php?action=violations" method="post" style="display:inline;">
+                                <input type="hidden" name="Action" value="Warn User">
+                                <input type="hidden" name="UserID" value="<?= (int)$report['UserId'] ?>">
+                                <input type="hidden" name="ReportID" value="<?= (int)$report['ReportId'] ?>">
+                                <button type="submit">Warn</button>
+                            </form>
+                            <form action="/clinic/controllers/admin_run.php?action=violations" method="post" style="display:inline;">
+                                <input type="hidden" name="Action" value="Ban">
+                                <input type="hidden" name="UserID" value="<?= (int)$report['UserId'] ?>">
+                                <input type="hidden" name="ReportID" value="<?= (int)$report['ReportId'] ?>">
+                                <button type="submit">Ban</button>
+                            </form>
+                        <?php else: ?>
+                            Completed
+                        <?php endif; ?>
+                    </td>
                 </tr>
-            <?php endif; ?>
+            <?php endforeach; ?>
         </table>
     </div>
 </body>

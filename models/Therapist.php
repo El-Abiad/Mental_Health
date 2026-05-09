@@ -1,173 +1,308 @@
 <?php
+
 require_once __DIR__ . '/../core/BaseController.php';
 
-class Therapist extends BaseController {
-    public function __construct() {
-        parent::__construct();
-    }
-
-    public function getProfile(int $therapistId) {
-        $stmt = $this->db->prepare('SELECT t.*, u.FullName, u.Email FROM therapistprofile t JOIN Users u ON t.UserId = u.Id WHERE t.UserId = ?');
+class Therapist extends BaseController
+{
+    public function getProfile(int $therapistId): ?array
+    {
+        $stmt = $this->db->prepare('
+            SELECT tp.*, u.FullName, u.Email, u.Phone
+            FROM TherapistProfile tp
+            JOIN Users u ON tp.UserId = u.Id
+            WHERE tp.UserId = ?
+        ');
         $stmt->bind_param('i', $therapistId);
         $stmt->execute();
-        return $stmt->get_result()->fetch_assoc();
+        $row = $stmt->get_result()->fetch_assoc();
+        return $row ?: null;
     }
 
-    public function getUpcomingAppointments(int $therapistId) {
-        $stmt = $this->db->prepare('SELECT a.*, u.FullName as PatientName FROM appointment a JOIN patientprofile p ON a.PatientId = p.UserId JOIN Users u ON p.UserId = u.Id WHERE a.TherapistId = ? AND a.ScheduledAt >= NOW() ORDER BY a.ScheduledAt ASC');
-        $stmt->bind_param('i', $therapistId);
-        $stmt->execute();
-        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-    }
-
-    public function getTodaySessions(int $therapistId) {
-        $stmt = $this->db->prepare('SELECT s.*, a.ScheduledAt, u.FullName as PatientName FROM session s JOIN appointment a ON s.AppointmentId = a.AppointmentId JOIN Users u ON a.PatientId = u.Id WHERE a.TherapistId = ? AND DATE(a.ScheduledAt) = CURDATE()');
-        $stmt->bind_param('i', $therapistId);
-        $stmt->execute();
-        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-    }
-
-    public function getMissedHighRiskPatients(int $therapistId) {
-        $stmt = $this->db->prepare("SELECT DISTINCT p.*, u.FullName as PatientName FROM patientprofile p JOIN Users u ON p.UserId = u.Id JOIN appointment a ON a.PatientId = p.UserId WHERE a.TherapistId = ? AND a.Status = 'cancelled'");
-        $stmt->bind_param('i', $therapistId);
-        $stmt->execute();
-        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-    }
-
-    public function getWeeklyMoodReports(int $therapistId) {
-        $stmt = $this->db->prepare('SELECT d.*, u.FullName as PatientName FROM dailylog d JOIN appointment a ON a.PatientId = d.PatientId JOIN Users u ON d.PatientId = u.Id WHERE a.TherapistId = ? AND d.LogDate >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) GROUP BY d.LogId');
+    public function getUpcomingAppointments(int $therapistId): array
+    {
+        $stmt = $this->db->prepare('
+            SELECT a.AppointmentId AS id, a.ScheduledAt AS date, a.Status AS status,
+                   p.FullName AS patient_name
+            FROM Appointment a
+            JOIN Users p ON a.PatientId = p.Id
+            WHERE a.TherapistId = ? AND a.ScheduledAt >= NOW()
+            ORDER BY a.ScheduledAt ASC
+        ');
         $stmt->bind_param('i', $therapistId);
         $stmt->execute();
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
-    public function getAvailability(int $therapistId) {
-        $stmt = $this->db->prepare('SELECT * FROM availability WHERE TherapistId = ?');
+    public function getTodaySessions(int $therapistId): array
+    {
+        $stmt = $this->db->prepare('
+            SELECT s.SessionId AS id, s.Status AS status, a.ScheduledAt AS date,
+                   p.FullName AS patient_name
+            FROM Session s
+            JOIN Appointment a ON s.AppointmentId = a.AppointmentId
+            JOIN Users p ON a.PatientId = p.Id
+            WHERE a.TherapistId = ? AND DATE(a.ScheduledAt) = CURDATE()
+            ORDER BY a.ScheduledAt ASC
+        ');
         $stmt->bind_param('i', $therapistId);
         $stmt->execute();
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
-    public function upsertAvailability(int $therapistId, int $day, string $start, string $end) {
-        $stmt1 = $this->db->prepare('DELETE FROM availability WHERE TherapistId = ? AND DayOfWeek = ?');
-        $stmt1->bind_param('ii', $therapistId, $day);
-        $stmt1->execute();
-        
-        $stmt2 = $this->db->prepare('INSERT INTO availability (TherapistId, DayOfWeek, StartTime, EndTime) VALUES (?, ?, ?, ?)');
-        $stmt2->bind_param('iiss', $therapistId, $day, $start, $end);
-        return $stmt2->execute();
+    public function getMissedHighRiskPatients(int $therapistId): array
+    {
+        return [];
     }
 
-    public function setSnooze(int $therapistId, int $snoozed) {
-        $stmt = $this->db->prepare('UPDATE therapistprofile SET IsSnoozed = ? WHERE UserId = ?');
+    public function getWeeklyMoodReports(int $therapistId): array
+    {
+        $stmt = $this->db->prepare('
+            SELECT dl.PatientId, u.FullName AS patient_name, AVG(dl.MoodScore) AS avg_mood,
+                   COUNT(*) AS logs_count
+            FROM DailyLog dl
+            JOIN Users u ON dl.PatientId = u.Id
+            JOIN Appointment a ON a.PatientId = dl.PatientId
+            WHERE a.TherapistId = ? AND dl.LogDate >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+            GROUP BY dl.PatientId, u.FullName
+            ORDER BY avg_mood ASC
+        ');
+        $stmt->bind_param('i', $therapistId);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
+
+    public function getAvailability(int $therapistId): array
+    {
+        $stmt = $this->db->prepare('
+            SELECT AvailabilityId AS id, DayOfWeek AS day, StartTime AS start_time, EndTime AS end_time
+            FROM Availability
+            WHERE TherapistId = ?
+            ORDER BY DayOfWeek
+        ');
+        $stmt->bind_param('i', $therapistId);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
+
+    public function upsertAvailability(int $therapistId, int $day, string $start, string $end): bool
+    {
+        $stmt = $this->db->prepare('
+            INSERT INTO Availability (TherapistId, DayOfWeek, StartTime, EndTime)
+            VALUES (?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE StartTime = VALUES(StartTime), EndTime = VALUES(EndTime)
+        ');
+        $stmt->bind_param('iiss', $therapistId, $day, $start, $end);
+        return $stmt->execute();
+    }
+
+    public function setSnooze(int $therapistId, int $snoozed): bool
+    {
+        $stmt = $this->db->prepare('UPDATE TherapistProfile SET IsSnoozed = ? WHERE UserId = ?');
         $stmt->bind_param('ii', $snoozed, $therapistId);
         return $stmt->execute();
     }
 
-    public function notifyPatientsTherapistSnoozed(int $therapistId) {
-        $stmt = $this->db->prepare('INSERT INTO notification (UserId, Message, Type, SentAt, IsRead) SELECT DISTINCT a.PatientId, "Your therapist is temporarily unavailable", "System", NOW(), 0 FROM appointment a WHERE a.TherapistId = ?');
-        $stmt->bind_param('i', $therapistId);
+    public function notifyPatientsTherapistSnoozed(int $therapistId): bool
+    {
+        $message = 'Your therapist is temporarily unavailable.';
+        $stmt = $this->db->prepare('
+            INSERT INTO Notification (UserId, Message, Type)
+            SELECT DISTINCT PatientId, ?, "therapist_snoozed"
+            FROM Appointment
+            WHERE TherapistId = ?
+        ');
+        $stmt->bind_param('si', $message, $therapistId);
         return $stmt->execute();
     }
 
-    public function getSession(int $sessionId, int $therapistId) {
-        $stmt = $this->db->prepare('SELECT s.*, a.PatientId, u.FullName as PatientName FROM session s JOIN appointment a ON s.AppointmentId = a.AppointmentId JOIN Users u ON a.PatientId = u.Id WHERE s.SessionId = ? AND a.TherapistId = ?');
+    public function getSession(int $sessionId, int $therapistId): ?array
+    {
+        $stmt = $this->db->prepare('
+            SELECT s.SessionId AS id, s.*, a.ScheduledAt AS date, a.PatientId,
+                   p.FullName AS patient_name
+            FROM Session s
+            JOIN Appointment a ON s.AppointmentId = a.AppointmentId
+            JOIN Users p ON a.PatientId = p.Id
+            WHERE s.SessionId = ? AND a.TherapistId = ?
+        ');
         $stmt->bind_param('ii', $sessionId, $therapistId);
         $stmt->execute();
-        return $stmt->get_result()->fetch_assoc();
+        $row = $stmt->get_result()->fetch_assoc();
+        return $row ?: null;
     }
 
-    public function getPatientBySession(int $sessionId) {
-        $stmt = $this->db->prepare('SELECT p.*, u.FullName FROM patientprofile p JOIN Users u ON p.UserId = u.Id JOIN appointment a ON a.PatientId = p.UserId JOIN session s ON s.AppointmentId = a.AppointmentId WHERE s.SessionId = ?');
+    public function getPatientBySession(int $sessionId): ?array
+    {
+        $stmt = $this->db->prepare('
+            SELECT u.*
+            FROM Users u
+            JOIN Appointment a ON u.Id = a.PatientId
+            JOIN Session s ON a.AppointmentId = s.AppointmentId
+            WHERE s.SessionId = ?
+        ');
         $stmt->bind_param('i', $sessionId);
         $stmt->execute();
-        return $stmt->get_result()->fetch_assoc();
+        $row = $stmt->get_result()->fetch_assoc();
+        return $row ?: null;
     }
 
-    public function hasLiveSession(int $therapistId) {
-        $stmt = $this->db->prepare("SELECT COUNT(*) as cnt FROM session s JOIN appointment a ON s.AppointmentId = a.AppointmentId WHERE a.TherapistId = ? AND s.Status = 'live'");
+    public function hasLiveSession(int $therapistId): bool
+    {
+        $stmt = $this->db->prepare('
+            SELECT COUNT(*) AS total
+            FROM Session s
+            JOIN Appointment a ON s.AppointmentId = a.AppointmentId
+            WHERE a.TherapistId = ? AND s.Status = "live"
+        ');
         $stmt->bind_param('i', $therapistId);
         $stmt->execute();
-        $res = $stmt->get_result()->fetch_assoc();
-        return ($res['cnt'] ?? 0) > 0;
+        $row = $stmt->get_result()->fetch_assoc();
+        return (int)($row['total'] ?? 0) > 0;
     }
 
-    public function startSession(int $sessionId, int $therapistId) {
-        $stmt = $this->db->prepare("UPDATE session s JOIN appointment a ON s.AppointmentId = a.AppointmentId SET s.Status = 'live', s.StartedAt = NOW() WHERE s.SessionId = ? AND a.TherapistId = ?");
+    public function startSession(int $sessionId, int $therapistId): bool
+    {
+        $stmt = $this->db->prepare('
+            UPDATE Session s
+            JOIN Appointment a ON s.AppointmentId = a.AppointmentId
+            SET s.Status = "live", s.StartedAt = NOW(), a.Status = "live"
+            WHERE s.SessionId = ? AND a.TherapistId = ?
+        ');
         $stmt->bind_param('ii', $sessionId, $therapistId);
         return $stmt->execute();
     }
 
-    public function endSession(int $sessionId, int $therapistId) {
-        $stmt = $this->db->prepare("UPDATE session s JOIN appointment a ON s.AppointmentId = a.AppointmentId SET s.Status = 'completed', s.EndedAt = NOW() WHERE s.SessionId = ? AND a.TherapistId = ?");
+    public function endSession(int $sessionId, int $therapistId): bool
+    {
+        $stmt = $this->db->prepare('
+            UPDATE Session s
+            JOIN Appointment a ON s.AppointmentId = a.AppointmentId
+            SET s.Status = "completed", s.EndedAt = NOW(), a.Status = "completed"
+            WHERE s.SessionId = ? AND a.TherapistId = ?
+        ');
         $stmt->bind_param('ii', $sessionId, $therapistId);
         return $stmt->execute();
     }
 
-    public function triggerCrisisAlert(int $sessionId, int $therapistId, string $keyword) {
+    public function triggerCrisisAlert(int $sessionId, int $therapistId, string $keyword): bool
+    {
         $patient = $this->getPatientBySession($sessionId);
-        if ($patient) {
-            $stmt = $this->db->prepare("INSERT INTO crisisalert (PatientId, Severity, TriggeredAt, Status) VALUES (?, 'high', NOW(), 'active')");
-            $stmt->bind_param('i', $patient['UserId']);
-            return $stmt->execute();
+        if (!$patient) {
+            return false;
         }
-        return false;
-    }
-
-    public function updateProfile(int $therapistId, array $data) {
-        $spec = $data['Specialization'] ?? '';
-        $licStatus = $data['LicenseStatus'] ?? '';
-        $licExp = $data['LicenseExpiry'] ?? '';
-        $snoozed = $data['IsSnoozed'] ?? 0;
-        
-        $stmt = $this->db->prepare('UPDATE therapistprofile SET Specialization = ?, LicenseStatus = ?, LicenseExpiry = ?, IsSnoozed = ? WHERE UserId = ?');
-        $stmt->bind_param('sssii', $spec, $licStatus, $licExp, $snoozed, $therapistId);
+        $severity = 'keyword:' . $keyword;
+        $stmt = $this->db->prepare('INSERT INTO CrisisAlert (PatientId, Severity, Status) VALUES (?, ?, "open")');
+        $patientId = (int)$patient['Id'];
+        $stmt->bind_param('is', $patientId, $severity);
         return $stmt->execute();
     }
 
-    public function cancelAppointment(int $appointmentId, int $therapistId, string $reason) {
-        $stmt = $this->db->prepare("UPDATE appointment SET Status = 'cancelled', CancelReason = ? WHERE AppointmentId = ? AND TherapistId = ?");
+    public function updateProfile(int $therapistId, array $data): bool
+    {
+        $stmt = $this->db->prepare('
+            UPDATE TherapistProfile
+            SET Specialization = ?, LicenseStatus = ?, LicenseExpiry = ?, IsSnoozed = ?
+            WHERE UserId = ?
+        ');
+        $stmt->bind_param(
+            'sssii',
+            $data['Specialization'],
+            $data['LicenseStatus'],
+            $data['LicenseExpiry'],
+            $data['IsSnoozed'],
+            $therapistId
+        );
+        return $stmt->execute();
+    }
+
+    public function cancelAppointment(int $appointmentId, int $therapistId, string $reason): bool
+    {
+        $stmt = $this->db->prepare('
+            UPDATE Appointment
+            SET Status = "cancelled", CancelReason = ?
+            WHERE AppointmentId = ? AND TherapistId = ?
+        ');
         $stmt->bind_param('sii', $reason, $appointmentId, $therapistId);
         return $stmt->execute();
     }
 
-    public function applyLateCancellationFine(int $appointmentId) {
-        // Future feature, do nothing for now
-        return true;
+    public function applyLateCancellationFine(int $appointmentId): bool
+    {
+        $stmt = $this->db->prepare('
+            UPDATE Payment
+            SET Status = "fine", RefundStatus = "none", Amount = Amount * 0.5
+            WHERE AppointmentId = ?
+        ');
+        $stmt->bind_param('i', $appointmentId);
+        return $stmt->execute();
     }
 
-    public function getPatients(int $therapistId) {
-        $stmt = $this->db->prepare('SELECT DISTINCT p.*, u.FullName as PatientName FROM patientprofile p JOIN Users u ON p.UserId = u.Id JOIN appointment a ON a.PatientId = p.UserId WHERE a.TherapistId = ?');
+    public function getPatients(int $therapistId): array
+    {
+        $stmt = $this->db->prepare('
+            SELECT DISTINCT u.Id, u.FullName, u.Email
+            FROM Users u
+            JOIN Appointment a ON u.Id = a.PatientId
+            WHERE a.TherapistId = ?
+            ORDER BY u.FullName
+        ');
         $stmt->bind_param('i', $therapistId);
         $stmt->execute();
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
-    public function getSharedJournals(int $therapistId) {
-        $stmt = $this->db->prepare('SELECT j.*, u.FullName as PatientName FROM journal j JOIN appointment a ON a.PatientId = j.PatientId JOIN Users u ON j.PatientId = u.Id WHERE a.TherapistId = ? AND j.IsPrivate = 0 GROUP BY j.JournalId');
+    public function getSharedJournals(int $therapistId): array
+    {
+        $stmt = $this->db->prepare('
+            SELECT j.*, u.FullName AS patient_name
+            FROM Journal j
+            JOIN Users u ON j.PatientId = u.Id
+            JOIN Appointment a ON a.PatientId = j.PatientId
+            WHERE a.TherapistId = ? AND j.IsPrivate = 0
+            ORDER BY j.CreatedAt DESC
+        ');
         $stmt->bind_param('i', $therapistId);
         $stmt->execute();
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
-    public function getPatientIfAssigned(int $therapistId, int $patientId) {
-        $stmt = $this->db->prepare('SELECT p.*, u.FullName FROM patientprofile p JOIN Users u ON p.UserId = u.Id JOIN appointment a ON a.PatientId = p.UserId WHERE a.TherapistId = ? AND p.UserId = ? LIMIT 1');
+    public function getPatientIfAssigned(int $therapistId, int $patientId): ?array
+    {
+        $stmt = $this->db->prepare('
+            SELECT u.*
+            FROM Users u
+            JOIN Appointment a ON u.Id = a.PatientId
+            WHERE a.TherapistId = ? AND a.PatientId = ?
+            LIMIT 1
+        ');
         $stmt->bind_param('ii', $therapistId, $patientId);
         $stmt->execute();
-        return $stmt->get_result()->fetch_assoc();
+        $row = $stmt->get_result()->fetch_assoc();
+        return $row ?: null;
     }
 
-    public function getWeeklyMoodLogs(int $patientId) {
-        $stmt = $this->db->prepare('SELECT * FROM dailylog WHERE PatientId = ? AND LogDate >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) ORDER BY LogDate ASC');
+    public function getWeeklyMoodLogs(int $patientId): array
+    {
+        $stmt = $this->db->prepare('
+            SELECT *
+            FROM DailyLog
+            WHERE PatientId = ? AND LogDate >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+            ORDER BY LogDate DESC
+        ');
         $stmt->bind_param('i', $patientId);
         $stmt->execute();
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
-    public function getSleepReport(int $patientId) {
-        $stmt = $this->db->prepare('SELECT LogDate, SleepHours FROM dailylog WHERE PatientId = ? ORDER BY LogDate ASC');
+    public function getSleepReport(int $patientId): array
+    {
+        $stmt = $this->db->prepare('
+            SELECT AVG(SleepHours) AS avg_sleep, MIN(SleepHours) AS min_sleep, MAX(SleepHours) AS max_sleep
+            FROM DailyLog
+            WHERE PatientId = ? AND LogDate >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+        ');
         $stmt->bind_param('i', $patientId);
         $stmt->execute();
-        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        return $stmt->get_result()->fetch_assoc() ?: [];
     }
 }

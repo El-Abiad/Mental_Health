@@ -1,41 +1,47 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Sessions</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .session { border: 1px solid #ccc; padding: 15px; margin: 10px 0; }
-        .upcoming { border-color: #4CAF50; }
-        .completed { border-color: #2196F3; }
-        .cancelled { border-color: #f44336; }
-    </style>
-</head>
-<body>
-    <h1>My Sessions</h1>
+<?php $title = 'My Sessions'; include __DIR__ . '/../shared/header.php'; ?>
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">My Sessions</h1>
+        <a class="btn btn-outline-primary" href="/clinic/controllers/patient_run.php?action=dashboard">Dashboard</a>
+    </div>
 
-    <?php if (empty($sessions)): ?>
-        <p>No sessions or appointments found yet.</p>
-    <?php else: ?>
-        <?php foreach ($sessions as $session): ?>
-            <?php $status = $session['status'] ?? 'Scheduled'; ?>
-            <div class="session <?php echo strtolower($status); ?>">
-                <h3>Session with <?php echo htmlspecialchars($session['therapist_name']); ?></h3>
-                <p><strong>Date:</strong> <?php echo htmlspecialchars($session['date']); ?></p>
-                <p><strong>Status:</strong> <?php echo htmlspecialchars($status); ?></p>
-                <p><strong>Notes:</strong> <?php echo htmlspecialchars($session['notes'] ?? ''); ?></p>
-                <?php if ($status === 'Scheduled' && isset($session['id'])): ?>
-                    <a href="/patient/session/<?php echo $session['id']; ?>/cancel">Cancel Session</a>
-                <?php endif; ?>
-            </div>
-        <?php endforeach; ?>
-    <?php endif; ?>
-
-    <?php if (isset($_GET['booked']) && $_GET['booked'] == '1'): ?>
-        <p style="color: green; font-weight: bold;">Session booked successfully.</p>
-    <?php endif; ?>
-    <a href="/patient/book-session">Book New Session</a> | 
-    <a href="/patient/dashboard">Back to Dashboard</a>
-</body>
-</html>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <?php if (empty($sessions)): ?>
+                <p class="text-muted mb-0">No sessions found.</p>
+            <?php else: ?>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Therapist</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Notes</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($sessions as $session): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($session['therapist_name'] ?? '') ?></td>
+                                    <td><?= htmlspecialchars($session['date'] ?? '') ?></td>
+                                    <td><span class="badge bg-primary-subtle text-primary"><?= htmlspecialchars($session['status'] ?? '') ?></span></td>
+                                    <td><?= htmlspecialchars($session['notes'] ?? '') ?></td>
+                                    <td>
+                                        <?php if (strtolower((string)$session['status']) === 'scheduled'): ?>
+                                            <span class="text-muted">Contact clinic to cancel</span>
+                                        <?php else: ?>
+                                            <span class="text-muted">-</span>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+<?php include __DIR__ . '/../shared/footer.php'; ?>

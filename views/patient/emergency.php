@@ -3,25 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Emergency Contact</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .card { border: 1px solid #f44336; padding: 20px; border-radius: 8px; background: #fff5f5; }
-        .card h1 { color: #b71c1c; }
-        .card p { margin: 10px 0; }
-        .btn { display: inline-block; padding: 12px 20px; background: #f44336; color: white; text-decoration: none; border-radius: 5px; }
-    </style>
+    <title>Emergency</title>
+    <link rel="stylesheet" href="/clinic/assets/style.css">
 </head>
 <body>
-    <div class="card">
-        <h1>Emergency</h1>
-        <p>If you are in immediate danger or need urgent support, please call the emergency hotline immediately.</p>
-        <p><strong>Emergency Hotline:</strong> <a href="tel:+123456789" class="btn">Call Now</a></p>
-        <p>If the call button doesn't work, dial the local emergency services number on your phone.</p>
-    </div>
-
-    <p><a href="/patient/dashboard">Back to Dashboard</a></p>
+    <h1>Emergency Alert</h1>
+    <?php if (!empty($message)): ?>
+        <p class="success"><?= htmlspecialchars($message) ?></p>
+    <?php endif; ?>
+    <p>If this is an immediate emergency, contact local emergency services first.</p>
+    <a class="btn-delete" href="/clinic/controllers/patient_run.php?action=emergency&trigger=1">Send Crisis Alert</a>
+    <a href="/clinic/controllers/patient_run.php?action=dashboard">Back to Dashboard</a>
 </body>
-</html><button onclick="window.location.href='../../patient_run.php?emergency=1'">
-    🚨 CRISIS CALL
-</button>
+</html>

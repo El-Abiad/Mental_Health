@@ -2,21 +2,16 @@
 
 class User
 {
+    private const ROLE_ADMIN = 1;
+    private const ROLE_MANAGER = 2;
+    private const ROLE_PATIENT = 3;
+    private const ROLE_THERAPIST = 4;
+
     public static function findByEmail(string $email): array|null
     {
         $db = Database::getConnection();
         $stmt = $db->prepare('SELECT * FROM Users WHERE Email = ?');
         $stmt->bind_param('s', $email);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        return $result->fetch_assoc();
-    }
-
-    public static function findByUsername(string $username): array|null
-    {
-        $db = Database::getConnection();
-        $stmt = $db->prepare('SELECT * FROM Users WHERE Username = ?');
-        $stmt->bind_param('s', $username);
         $stmt->execute();
         $result = $stmt->get_result();
         return $result->fetch_assoc();
@@ -49,9 +44,14 @@ class User
         return $row ? $row['RoleName'] : false;
     }
 
-    public static function create(string $username, string $email, string $password, string $fullname, string $roleId, string $phone = ''): int
+    public static function create(string $username, string $email, string $password, string $fullname, int|string $roleId = self::ROLE_PATIENT, string $phone = ''): int
     {
         $db = Database::getConnection();
+        $roleId = (int)$roleId;
+
+        $db->begin_transaction();
+
+        try {
         $stmt = $db->prepare('
             INSERT INTO Users (Username, Email, Password, FullName, Phone) 
             VALUES (?, ?, ?, ?, ?)
@@ -65,21 +65,37 @@ class User
         ');
         $roleStmt->bind_param('ii', $userId, $roleId);
         $roleStmt->execute();
-        if ($roleId == 3) {
+
+            if ($roleId === self::ROLE_PATIENT) {
             $profileStmt = $db->prepare('
                 INSERT INTO PatientProfile (UserId) VALUES (?)
-                
             ');
             $profileStmt->bind_param('i', $userId);
+                $profileStmt->execute();
         }
-        if ($roleId == 1) {
-            $adminlevel = 1;
-            $profileStmt = $db->prepare('INSERT INTO adminprofile values(?,?)');
-            $profileStmt->bind_param("ii", $userId, $adminlevel);
+
+            if ($roleId === self::ROLE_THERAPIST) {
+                $profileStmt = $db->prepare('
+                    INSERT INTO TherapistProfile (UserId, LicenseStatus) VALUES (?, "pending")
+                ');
+                $profileStmt->bind_param('i', $userId);
+                $profileStmt->execute();
         }
-        $profileStmt->execute();
+
+            if ($roleId === self::ROLE_ADMIN) {
+                $adminLevel = 1;
+                $profileStmt = $db->prepare('INSERT INTO AdminProfile (UserId, AdminLevel) VALUES (?, ?)');
+                $profileStmt->bind_param('ii', $userId, $adminLevel);
+                $profileStmt->execute();
+            }
+
+            $db->commit();
 
         return $userId;
+        } catch (Throwable $e) {
+            $db->rollback();
+            throw $e;
+        }
     }
 
     public static function getAll(): array

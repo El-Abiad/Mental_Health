@@ -1,44 +1,31 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Therapist Notes</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .note { border: 1px solid #ccc; padding: 15px; margin: 10px 0; }
-        .note-form { margin-top: 20px; }
-        textarea { width: 100%; height: 100px; }
-    </style>
-</head>
-<body>
-    <h1>Therapist Notes</h1>
-
-    <h2>Existing Notes</h2>
-    <?php foreach ($notes as $note): ?>
-        <div class="note">
-            <p><strong>Patient ID:</strong> <?php echo htmlspecialchars($note['patient_id']); ?></p>
-            <p><strong>Content:</strong> <?php echo htmlspecialchars($note['content']); ?></p>
-            <p><strong>Timestamp:</strong> <?php echo htmlspecialchars($note['timestamp']); ?></p>
+<?php $title = 'Therapist Notes'; include __DIR__ . '/../shared/header.php'; ?>
+<div class="container my-4">
+    <h1 class="h3">Clinical Notes</h1>
+    <?php if (isset($_GET['saved'])): ?><div class="alert alert-success">Note saved.</div><?php endif; ?>
+    <form method="post" action="/clinic/controllers/therapist_run.php?action=notes" class="mb-4">
+        <div class="mb-2">
+            <label class="form-label" for="session_id">Session ID</label>
+            <input class="form-control" type="number" id="session_id" name="session_id" required>
         </div>
-    <?php endforeach; ?>
-
-    <div class="note-form">
-        <h2>Create New Note</h2>
-        <form method="POST">
-            <label for="patient_id">Patient ID:</label>
-            <input type="number" id="patient_id" name="patient_id" required><br><br>
-
-            <label for="session_note">Note Content:</label><br>
-            <textarea id="session_note" name="session_note" required></textarea><br><br>
-
-            <label>Timestamp (auto-generated):</label>
-            <input type="text" value="<?php echo date('Y-m-d H:i:s'); ?>" disabled><br><br>
-
-            <button type="submit">Lock Note</button>
-        </form>
-    </div>
-
-    <a href="/therapist/dashboard">Back to Dashboard</a>
-</body>
-</html>
+        <div class="mb-2">
+            <label class="form-label" for="content">Note</label>
+            <textarea class="form-control" id="content" name="content" rows="4" required></textarea>
+        </div>
+        <button class="btn btn-primary" type="submit">Save Note</button>
+    </form>
+    <table class="table table-striped">
+        <thead><tr><th>ID</th><th>Session</th><th>Content</th><th>Created</th></tr></thead>
+        <tbody>
+        <?php foreach ($notes as $note): ?>
+            <tr>
+                <td><?= (int)$note['id'] ?></td>
+                <td><?= htmlspecialchars((string)($note['session_id'] ?? '')) ?></td>
+                <td><?= htmlspecialchars((string)$note['content']) ?></td>
+                <td><?= htmlspecialchars((string)$note['timestamp']) ?></td>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+    <a href="/clinic/controllers/therapist_run.php?action=dashboard">Back to Dashboard</a>
+</div>
+<?php include __DIR__ . '/../shared/footer.php'; ?>

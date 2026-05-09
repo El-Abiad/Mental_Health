@@ -12,6 +12,19 @@ class Admin extends User
     public static function DeleteUser(int $userId): bool
     {
         $db = Database::getConnection();
+        $cleanup = [
+            'DELETE FROM UserRoles WHERE UserId = ?',
+            'DELETE FROM PatientProfile WHERE UserId = ?',
+            'DELETE FROM TherapistProfile WHERE UserId = ?',
+            'DELETE FROM AdminProfile WHERE UserId = ?',
+        ];
+        foreach ($cleanup as $sql) {
+            $stmt = $db->prepare($sql);
+            if ($stmt) {
+                $stmt->bind_param('i', $userId);
+                $stmt->execute();
+            }
+        }
         $stmt = $db->prepare('DELETE FROM Users WHERE Id = ?');
         if ($stmt === false) {
             die("Prepare failed: " . $db->error);
@@ -54,7 +67,7 @@ class Admin extends User
     {
         $db = Database::getConnection();
         $res = $db->prepare("UPDATE VIOLATIONREPORT SET REASON=?,STATUS=?,RESOLVEDBY=? WHERE REPORTID=?");
-        $res->bind_param("ssisi", $reason, $status, $resolvedby, $reportid);
+        $res->bind_param("ssii", $reason, $status, $resolvedby, $reportid);
         return $res->execute();
     }
     public static function GiveWarning(int $userId, string $mess)
@@ -64,7 +77,7 @@ class Admin extends User
         $query = "INSERT INTO notification (UserId, Message) VALUES (?, ?)";
         $stmt = $db->prepare($query);
         if ($stmt === false) {
-            die("Prepare failed: " . $$db->error);
+            die("Prepare failed: " . $db->error);
         }
 
         $stmt->bind_param("is", $userId, $message);
@@ -81,15 +94,24 @@ class Admin extends User
     public static function GetAllIntakeForms(): array
     {
         $db = Database::getConnection();
-        $res = $db->query("SELECT * FROM INTAKEFORM");
+        $res = $db->query("
+            SELECT
+                pp.UserId AS FormId,
+                pp.UserId AS PatientId,
+                COALESCE(pp.MedicalHistory, '') AS Responses,
+                NULL AS SubmittedAt,
+                (pp.Status = 'verified') AS isVerified
+            FROM PatientProfile pp
+            ORDER BY pp.UserId DESC
+        ");
         return $res->fetch_all(MYSQLI_ASSOC);
     }
     public static function VerifyForm(int $formid, bool $IsAccepted): bool
     {
         $db = Database::getConnection();
-        $res = $db->prepare("UPDATE INTAKEFORM SET isVerified=? WHERE FORMID=?");
-        $boolans = $IsAccepted ? 1 : 0;
-        $res->bind_param("ii", $boolans, $formid);
+        $status = $IsAccepted ? 'verified' : 'active';
+        $res = $db->prepare("UPDATE PatientProfile SET Status = ? WHERE UserId = ?");
+        $res->bind_param("si", $status, $formid);
         return $res->execute();
     }
     public static function GetPatientName(int $patientID): string

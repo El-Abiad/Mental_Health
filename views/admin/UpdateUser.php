@@ -1,70 +1,61 @@
+<?php
+require_once __DIR__ . '/../../controllers/AdminController.php';
+
+$roles = AdminController::GetAllRoles();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $id = (int)($_POST['id'] ?? 0);
+    AdminController::UpdateUser(
+        $id,
+        trim($_POST['username'] ?? ''),
+        trim($_POST['email'] ?? ''),
+        trim($_POST['FullName'] ?? ''),
+        trim($_POST['phone'] ?? ''),
+        (int)($_POST['role'] ?? 3)
+    );
+    header('Location: /clinic/controllers/admin_run.php?action=users&msg=updated');
+    exit;
+}
+
+$id = (int)($_GET['id'] ?? 0);
+$user = AdminController::GetUserById($id);
+if (!$user) {
+    echo 'User not found.';
+    exit;
+}
+$currentUserRoleName = AdminController::GetUserRole((int)$user['Id']);
+?>
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Update User</title>
-    <link rel="stylesheet" href="../../assets/style.css">
+    <link rel="stylesheet" href="/clinic/assets/style.css">
 </head>
-
 <body>
-    <?php
-    require_once "../../controllers/AdminController.php";
-    $roles = AdminController::GetAllRoles();
-    if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['id'])) {
-        $id = intval($_GET['id']);
-        $user = AdminController::GetUserById($id);
-        if (!$user) {
-            echo "User not found.";
-            exit();
-        }
-    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $db       = Database::getConnection();
-        $id       = intval($_POST['id']);
-        $username = strval($_POST['username']);
-        $email    = strval($_POST['email']);
-        $fullname = strval($_POST['FullName']);
-        $phone    = strval($_POST['phone'] ?? '');
-        $roleId   = intval($_POST['role']);
-        if (AdminController::UpdateUser($id, $username, $email, $fullname, $phone, $roleId)) {
-            echo "User updated successfully!";
-        } else {
-            echo "Error updating user.";
-        }
-        header('Location: users.php');
-        exit();
-    }
-
-    ?>
     <div class="edit-user">
-        <form action="UpdateUser.php" method="post">
-            <input type="hidden" name="action" value="edit">
-            <input type="hidden" name="id" id="edit-id" value="<?php echo $user['Id']; ?>">
+        <form action="/clinic/controllers/admin_run.php?action=updateUser" method="post">
+            <input type="hidden" name="id" value="<?= (int)$user['Id'] ?>">
             <label for="edit-username">Username:</label>
-            <input type="text" id="edit-username" name="username" value="<?php echo htmlspecialchars($user['Username'] ?? ''); ?>" required>
-
+            <input type="text" id="edit-username" name="username" value="<?= htmlspecialchars($user['Username'] ?? '') ?>" required>
             <label for="edit-email">Email:</label>
-            <input type="email" id="edit-email" name="email" value="<?php echo htmlspecialchars($user['Email'] ?? ''); ?>" required>
-
+            <input type="email" id="edit-email" name="email" value="<?= htmlspecialchars($user['Email'] ?? '') ?>" required>
             <label for="edit-phone">Phone:</label>
-            <input type="text" id="edit-phone" name="phone" value="<?php echo htmlspecialchars($user['Phone'] ?? ''); ?>">
-
+            <input type="text" id="edit-phone" name="phone" value="<?= htmlspecialchars($user['Phone'] ?? '') ?>">
             <label for="edit-fullname">Full Name:</label>
-            <input type="text" id="edit-fullname" name="FullName" value="<?php echo htmlspecialchars($user['FullName'] ?? ''); ?>" required>
+            <input type="text" id="edit-fullname" name="FullName" value="<?= htmlspecialchars($user['FullName'] ?? '') ?>" required>
             <label for="edit-role">Role:</label>
             <select id="edit-role" name="role">
-                <?php
-                $currentUserRoleName = AdminController::GetUserRole($user['Id']);
-                foreach ($roles as $role) {
-                    $selected = ($currentUserRoleName == $role['RoleName']) ? 'selected' : '';
-                    echo "<option value='{$role['RoleId']}' " . $selected . "  >{$role['RoleName']}</option>";
-                }
-                ?>
-            </select><br><br>
+                <?php foreach ($roles as $role): ?>
+                    <option value="<?= (int)$role['RoleId'] ?>" <?= ($currentUserRoleName === $role['RoleName']) ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($role['RoleName']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
             <button type="submit">Update User</button>
+            <a href="/clinic/controllers/admin_run.php?action=users">Cancel</a>
         </form>
     </div>
 </body>
-
 </html>
