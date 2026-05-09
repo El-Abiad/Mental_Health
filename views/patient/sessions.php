@@ -15,18 +15,27 @@
 <body>
     <h1>My Sessions</h1>
 
-    <?php foreach ($sessions as $session): ?>
-        <div class="session <?php echo strtolower($session['status']); ?>">
-            <h3>Session with <?php echo htmlspecialchars($session['therapist_name']); ?></h3>
-            <p><strong>Date:</strong> <?php echo htmlspecialchars($session['date']); ?></p>
-            <p><strong>Status:</strong> <?php echo htmlspecialchars($session['status']); ?></p>
-            <p><strong>Notes:</strong> <?php echo htmlspecialchars($session['notes'] ?? ''); ?></p>
-            <?php if ($session['status'] === 'Scheduled'): ?>
-                <a href="/patient/session/<?php echo $session['id']; ?>/cancel">Cancel Session</a>
-            <?php endif; ?>
-        </div>
-    <?php endforeach; ?>
+    <?php if (empty($sessions)): ?>
+        <p>No sessions or appointments found yet.</p>
+    <?php else: ?>
+        <?php foreach ($sessions as $session): ?>
+            <?php $status = $session['status'] ?? 'Scheduled'; ?>
+            <div class="session <?php echo strtolower($status); ?>">
+                <h3>Session with <?php echo htmlspecialchars($session['therapist_name']); ?></h3>
+                <p><strong>Date:</strong> <?php echo htmlspecialchars($session['date']); ?></p>
+                <p><strong>Status:</strong> <?php echo htmlspecialchars($status); ?></p>
+                <p><strong>Notes:</strong> <?php echo htmlspecialchars($session['notes'] ?? ''); ?></p>
+                <?php if ($status === 'Scheduled' && isset($session['id'])): ?>
+                    <a href="/patient/session/<?php echo $session['id']; ?>/cancel">Cancel Session</a>
+                <?php endif; ?>
+            </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
 
+    <?php if (isset($_GET['booked']) && $_GET['booked'] == '1'): ?>
+        <p style="color: green; font-weight: bold;">Session booked successfully.</p>
+    <?php endif; ?>
+    <a href="/patient/book-session">Book New Session</a> | 
     <a href="/patient/dashboard">Back to Dashboard</a>
 </body>
 </html>

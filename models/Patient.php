@@ -6,56 +6,57 @@ class Patient extends BaseController {
         parent::__construct();
     }
 
-    // Get patient by user id
     public function getPatientByUserId(int $userId): ?array {
-        $stmt = $this->db->prepare('SELECT * FROM patients WHERE user_id = ?');
-        $stmt->execute([$userId]);
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt = $this->db->prepare('SELECT p.*, p.UserId as id, u.FullName, u.Email FROM patientprofile p JOIN Users u ON p.UserId = u.Id WHERE p.UserId = ?');
+        $stmt->bind_param('i', $userId);
+        $stmt->execute();
+        $result = $stmt->get_result()->fetch_assoc();
         return $result ?: null;
     }
 
-    // Update intake form status
     public function completeIntakeForm(int $patientId): bool {
-        $stmt = $this->db->prepare('UPDATE patients SET intake_form_completed = 1 WHERE id = ?');
-        return $stmt->execute([$patientId]);
+        $stmt = $this->db->prepare('UPDATE patientprofile SET intake_form_completed = 1 WHERE UserId = ?');
+        $stmt->bind_param('i', $patientId);
+        return $stmt->execute();
     }
 
-    // Sign agreement
     public function signAgreement(int $patientId): bool {
-        $stmt = $this->db->prepare('UPDATE patients SET agreement_signed = 1 WHERE id = ?');
-        return $stmt->execute([$patientId]);
+        $stmt = $this->db->prepare('UPDATE patientprofile SET agreement_signed = 1 WHERE UserId = ?');
+        $stmt->bind_param('i', $patientId);
+        return $stmt->execute();
     }
 
-    // Add therapist to favorites
     public function addFavorite(int $patientId, int $therapistId): bool {
-        $stmt = $this->db->prepare('INSERT INTO patient_favorites (patient_id, therapist_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE therapist_id = therapist_id');
-        return $stmt->execute([$patientId, $therapistId]);
+        $stmt = $this->db->prepare('INSERT IGNORE INTO patient_favorites (patient_id, therapist_id) VALUES (?, ?)');
+        $stmt->bind_param('ii', $patientId, $therapistId);
+        return $stmt->execute();
     }
 
-    // Get favorites
     public function getFavorites(int $patientId): array {
-        $stmt = $this->db->prepare('SELECT t.* FROM therapists t JOIN patient_favorites pf ON t.id = pf.therapist_id WHERE pf.patient_id = ?');
-        $stmt->execute([$patientId]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt = $this->db->prepare('SELECT t.*, u.FullName as TherapistName FROM therapistprofile t JOIN Users u ON t.UserId = u.Id JOIN patient_favorites pf ON t.UserId = pf.therapist_id WHERE pf.patient_id = ?');
+        $stmt->bind_param('i', $patientId);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
-    // Get upcoming sessions
     public function getUpcomingSessions(int $patientId): array {
-        $stmt = $this->db->prepare('SELECT * FROM sessions WHERE patient_id = ? AND date >= NOW() ORDER BY date ASC');
-        $stmt->execute([$patientId]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt = $this->db->prepare('SELECT s.*, a.ScheduledAt, u.FullName as TherapistName FROM session s JOIN appointment a ON s.AppointmentId = a.AppointmentId JOIN Users u ON a.TherapistId = u.Id WHERE a.PatientId = ? AND a.ScheduledAt >= NOW() ORDER BY a.ScheduledAt ASC');
+        $stmt->bind_param('i', $patientId);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
-    // Get mood logs
     public function getMoodLogs(int $patientId): array {
-        $stmt = $this->db->prepare('SELECT * FROM mood_logs WHERE patient_id = ? ORDER BY date DESC');
-        $stmt->execute([$patientId]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt = $this->db->prepare('SELECT * FROM dailylog WHERE PatientId = ? ORDER BY LogDate DESC');
+        $stmt->bind_param('i', $patientId);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
-    // Add mood log
     public function addMoodLog(int $patientId, string $mood, string $notes = ''): bool {
-        $stmt = $this->db->prepare('INSERT INTO mood_logs (patient_id, mood, notes, date) VALUES (?, ?, ?, CURDATE())');
-        return $stmt->execute([$patientId, $mood, $notes]);
+        $moodScore = (int)$mood; // Convert mood to int
+        $stmt = $this->db->prepare('INSERT INTO dailylog (PatientId, MoodScore, Notes, LogDate) VALUES (?, ?, ?, NOW())');
+        $stmt->bind_param('iis', $patientId, $moodScore, $notes);
+        return $stmt->execute();
     }
 }

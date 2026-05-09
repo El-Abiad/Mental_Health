@@ -23,7 +23,7 @@
             <button type="submit">Login</button>
         </form>
 
-        <p>Don't have an account? <a href="/clinic/views/auth/register.php">Register</a></p>
+        <p>Don't have an account? <a href="/clinic/controllers/auth_run.php?action=register">Register</a></p>
     </div>
 </body>
 </html>

@@ -8,9 +8,10 @@ class Note extends BaseController {
 
     // Create a new note
     public function create(int $patientId, int $therapistId, string $content, ?int $sessionId = null): array {
-        $stmt = $this->db->prepare('INSERT INTO notes (patient_id, therapist_id, session_id, content, timestamp) VALUES (?, ?, ?, ?, NOW())');
-        $stmt->execute([$patientId, $therapistId, $sessionId, $content]);
-        $noteId = $this->db->lastInsertId();
+        $stmt = $this->db->prepare('INSERT INTO clinicalnote (PatientId, TherapistId, SessionId, Content) VALUES (?, ?, ?, ?)');
+        $stmt->bind_param('iiis', $patientId, $therapistId, $sessionId, $content);
+        $stmt->execute();
+        $noteId = $this->db->insert_id;
 
         return [
             'id' => $noteId,
@@ -24,35 +25,37 @@ class Note extends BaseController {
 
     // Get notes for a patient
     public function getPatientNotes(int $patientId): array {
-        $stmt = $this->db->prepare('SELECT * FROM notes WHERE patient_id = ? ORDER BY timestamp DESC');
-        $stmt->execute([$patientId]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt = $this->db->prepare('SELECT * FROM clinicalnote WHERE PatientId = ? ORDER BY CreatedAt DESC');
+        $stmt->bind_param('i', $patientId);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
     // Get notes by therapist
     public function getTherapistNotes(int $therapistId): array {
-        $stmt = $this->db->prepare('SELECT * FROM notes WHERE therapist_id = ? ORDER BY timestamp DESC');
-        $stmt->execute([$therapistId]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt = $this->db->prepare('SELECT * FROM clinicalnote WHERE TherapistId = ? ORDER BY CreatedAt DESC');
+        $stmt->bind_param('i', $therapistId);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
     // Get notes by therapist
     public function getByTherapist(int $therapistId): array {
-        $stmt = $this->db->prepare('SELECT * FROM notes WHERE therapist_id = ? ORDER BY timestamp DESC');
-        $stmt->execute([$therapistId]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $this->getTherapistNotes($therapistId);
     }
 
-    // Get notes by session (assuming session_id column exists)
+    // Get notes by session
     public function getBySession(int $sessionId): array {
-        $stmt = $this->db->prepare('SELECT * FROM notes WHERE session_id = ? ORDER BY timestamp DESC');
-        $stmt->execute([$sessionId]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt = $this->db->prepare('SELECT * FROM clinicalnote WHERE SessionId = ? ORDER BY CreatedAt DESC');
+        $stmt->bind_param('i', $sessionId);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
     // Update note content
     public function update(int $noteId, int $therapistId, string $content): bool {
-        $stmt = $this->db->prepare('UPDATE notes SET content = ? WHERE id = ? AND therapist_id = ?');
-        return $stmt->execute([$content, $noteId, $therapistId]);
+        $stmt = $this->db->prepare('UPDATE clinicalnote SET Content = ?, Version = Version + 1 WHERE NoteId = ? AND TherapistId = ?');
+        $stmt->bind_param('sii', $content, $noteId, $therapistId);
+        return $stmt->execute();
     }
 }

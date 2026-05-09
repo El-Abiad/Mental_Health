@@ -12,6 +12,16 @@ class User
         return $result->fetch_assoc();
     }
 
+    public static function findByUsername(string $username): array|null
+    {
+        $db = Database::getConnection();
+        $stmt = $db->prepare('SELECT * FROM Users WHERE Username = ?');
+        $stmt->bind_param('s', $username);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_assoc();
+    }
+
     public static function findById(int $id): array|null
     {
         $db = Database::getConnection();

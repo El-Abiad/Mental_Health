@@ -41,7 +41,7 @@ class PatientController extends BaseController {
     private function processIntakeForm(int $patientId): void {
         // Process form data
         $this->patientModel->completeIntakeForm($patientId);
-        $this->redirect('/patient/dashboard');
+        $this->redirect('/clinic/controllers/patient_run.php?action=dashboard');
     }
 
     public function agreements(int $userId): void {
@@ -61,7 +61,7 @@ class PatientController extends BaseController {
 
     private function signAgreement(int $patientId): void {
         $this->patientModel->signAgreement($patientId);
-        $this->redirect('/patient/dashboard');
+        $this->redirect('/clinic/controllers/patient_run.php?action=dashboard');
     }
 
     public function sessions(int $userId): void {
@@ -94,7 +94,7 @@ class PatientController extends BaseController {
     private function addFavorite(int $patientId): void {
         $therapistId = (int) $_POST['therapist_id'];
         $this->patientModel->addFavorite($patientId, $therapistId);
-        $this->redirect('/patient/favorites');
+        $this->redirect('/clinic/controllers/patient_run.php?action=favorites');
     }
 
     public function logMood(int $userId): void {
@@ -110,10 +110,10 @@ class PatientController extends BaseController {
             $this->patientModel->addMoodLog($patient['id'], $mood, $notes);
         }
 
-        $this->redirect('/patient/dashboard');
+        $this->redirect('/clinic/controllers/patient_run.php?action=dashboard');
     }
 
-    protected function redirect($url) {
+    protected function redirect(string $url): void {
         header("Location: $url");
         exit;
     }

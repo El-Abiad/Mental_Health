@@ -19,8 +19,9 @@ class TherapistController extends BaseController
     // Clinic manager function to manage session cycle
     public function manageCycle(int $sessionId, string $newStatus): string {
         // Update session status
-        $stmt = $this->db->prepare('UPDATE sessions SET status = ? WHERE id = ?');
-        $stmt->execute([$newStatus, $sessionId]);
+        $stmt = $this->db->prepare('UPDATE Session SET Status = ? WHERE SessionId = ?');
+        $stmt->bind_param('si', $newStatus, $sessionId);
+        $stmt->execute();
         return "Session $sessionId status updated to $newStatus";
     }
 
@@ -28,17 +29,24 @@ class TherapistController extends BaseController
     {
         $this->requireTherapist();
 
+        // REQ 10: show upcoming appointments + today's sessions
         $appointments = $this->therapistModel->getUpcomingAppointments($therapistId);
         $sessions     = $this->therapistModel->getTodaySessions($therapistId);
         $profile      = $this->therapistModel->getProfile($therapistId);
 
+        // REQ 25: flag high-risk patients who missed sessions without notice
         $missedHighRisk = $this->therapistModel->getMissedHighRiskPatients($therapistId);
 
+        // REQ 27: weekly mood report summary for therapist
         $weeklyMoodReports = $this->therapistModel->getWeeklyMoodReports($therapistId);
 
         require __DIR__ . '/../views/therapist/dashboard.php';
     }
 
+    // ──────────────────────────────────────────────
+    //  AVAILABILITY
+    //  REQ 26: Therapist can Snooze (stop new patients, keep existing ones)
+    // ──────────────────────────────────────────────
 
     public function availability(int $therapistId): void
     {
@@ -69,17 +77,25 @@ class TherapistController extends BaseController
             $this->therapistModel->upsertAvailability($therapistId, $day, $start, $end);
         }
 
+        // REQ 26: handle snooze toggle — stops new patient assignments
         if (isset($_POST['is_snoozed'])) {
             $snoozed = (int) $_POST['is_snoozed']; // 1 = snoozed, 0 = active
             $this->therapistModel->setSnooze($therapistId, $snoozed);
 
+            // REQ 31: notify existing patients if therapist goes inactive
             if ($snoozed === 1) {
                 $this->therapistModel->notifyPatientsTherapistSnoozed($therapistId);
             }
         }
 
-        $this->redirect('/therapist/availability?saved=1');
+        $this->redirect('/clinic/controllers/therapist_run.php?action=availability&saved=1');
     }
+
+    // ──────────────────────────────────────────────
+    //  SESSIONS
+    //  REQ 9:  Clinic manager manages cycle (Scheduled → Live → Completed & Billed)
+    //  REQ 10: Therapist manages the session and gives user access
+    // ──────────────────────────────────────────────
 
     public function viewSession(int $therapistId, int $sessionId): void
     {
@@ -97,27 +113,40 @@ class TherapistController extends BaseController
         require __DIR__ . '/../views/therapist/session_view.php';
     }
 
+    /**
+     * REQ 10: Therapist starts session → Status becomes 'in_progress' (Live)
+     * REQ 8:  Prevents double booking by locking slot on start
+     */
     public function startSession(int $therapistId, int $sessionId): void
     {
         $this->requireTherapist();
 
+        // REQ 8: check no other session is already live for this therapist
         $alreadyLive = $this->therapistModel->hasLiveSession($therapistId);
         if ($alreadyLive) {
-            $this->redirect("/therapist/session/{$sessionId}?error=already_live");
+            $this->redirect("/clinic/controllers/therapist_run.php?action=session&id={$sessionId}&error=already_live");
             return;
         }
 
         $this->therapistModel->startSession($sessionId, $therapistId);
-        $this->redirect("/therapist/session/{$sessionId}");
+        $this->redirect("/clinic/controllers/therapist_run.php?action=session&id={$sessionId}");
     }
 
+    /**
+     * REQ 9: Therapist ends session → Status becomes 'completed'
+     * Clinic manager then handles billing
+     */
     public function endSession(int $therapistId, int $sessionId): void
     {
         $this->requireTherapist();
         $this->therapistModel->endSession($sessionId, $therapistId);
-        $this->redirect("/therapist/session/{$sessionId}?ended=1");
+        $this->redirect("/clinic/controllers/therapist_run.php?action=session&id={$sessionId}&ended=1");
     }
 
+    // ──────────────────────────────────────────────
+    //  CLINICAL NOTES
+    //  REQ 24: Therapist takes notes with timestamp (timestamp cannot be edited)
+    // ──────────────────────────────────────────────
 
     public function notes(int $therapistId): void
     {
@@ -127,7 +156,7 @@ class TherapistController extends BaseController
             $patientId = (int) $_POST['patient_id'];
             $content = trim($_POST['session_note']);
             $this->noteModel->create($patientId, $therapistId, $content);
-            $this->redirect('/therapist/notes?saved=1');
+            $this->redirect('/clinic/controllers/therapist_run.php?action=notes&saved=1');
             return;
         }
 
@@ -135,6 +164,11 @@ class TherapistController extends BaseController
         require __DIR__ . '/../views/therapist/notes.php';
     }
 
+    /**
+     * REQ 24: Notes have a CreatedAt timestamp set once on creation — never updated.
+     *         On edit, Version is incremented but original CreatedAt is preserved.
+     *         ClinicalNote: NoteId, SessionId, TherapistId, Content, Version, CreatedAt
+     */
     public function saveNote(int $therapistId, int $sessionId): void
     {
         $this->requireTherapist();
@@ -143,7 +177,7 @@ class TherapistController extends BaseController
         $noteId  = isset($_POST['note_id']) ? (int) $_POST['note_id'] : null;
 
         if ($content === '') {
-            $this->redirect("/therapist/session/{$sessionId}?error=empty_note");
+            $this->redirect("/clinic/controllers/therapist_run.php?action=session&id={$sessionId}&error=empty_note");
             return;
         }
 
@@ -155,10 +189,12 @@ class TherapistController extends BaseController
             $this->noteModel->update($noteId, $therapistId, $content);
         } else {
             // new note — CreatedAt set by DB CURRENT_TIMESTAMP, never changed
-            $this->noteModel->create($sessionId, $therapistId, $content);
+            $patient = $this->therapistModel->getPatientBySession($sessionId);
+            $patientId = $patient ? (int) $patient['PatientId'] : 0;
+            $this->noteModel->create($patientId, $therapistId, $content, $sessionId);
         }
 
-        $this->redirect("/therapist/session/{$sessionId}?note_saved=1");
+        $this->redirect("/clinic/controllers/therapist_run.php?action=session&id={$sessionId}&note_saved=1");
     }
 
     /**
@@ -208,7 +244,7 @@ class TherapistController extends BaseController
         ];
 
         $this->therapistModel->updateProfile($therapistId, $data);
-        $this->redirect('/therapist/profile?saved=1');
+        $this->redirect('/clinic/controllers/therapist_run.php?action=profile&saved=1');
     }
 
     // ──────────────────────────────────────────────
@@ -228,7 +264,7 @@ class TherapistController extends BaseController
         $reason = trim($_POST['reason'] ?? '');
 
         if ($reason === '') {
-            $this->redirect('/therapist/dashboard?error=reason_required');
+            $this->redirect('/clinic/controllers/therapist_run.php?action=dashboard&error=reason_required');
             return;
         }
 
@@ -238,7 +274,7 @@ class TherapistController extends BaseController
         // REQ 23: check if within 24h → apply fine to patient
         $this->therapistModel->applyLateCancellationFine($appointmentId);
 
-        $this->redirect('/therapist/dashboard?cancelled=1');
+        $this->redirect('/clinic/controllers/therapist_run.php?action=dashboard&cancelled=1');
     }
 
     // ──────────────────────────────────────────────
@@ -295,7 +331,7 @@ class TherapistController extends BaseController
         // }
     }
 
-    protected function redirect($url)
+    protected function redirect(string $url): void
     {
         header("Location: {$url}");
         exit;

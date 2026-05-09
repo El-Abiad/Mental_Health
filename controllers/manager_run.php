@@ -12,7 +12,7 @@ if (
     empty($_SESSION['user_id']) ||
     ($_SESSION['role'] ?? '') !== 'manager'
 ) {
-    header('Location: ../auth/login.php');
+    header('Location: ../views/auth/login.php');
     exit;
 }
 
